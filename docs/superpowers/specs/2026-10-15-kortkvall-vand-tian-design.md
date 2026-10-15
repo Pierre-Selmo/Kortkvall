@@ -17,7 +17,8 @@ En webbsida där man och ens vänner kan spela kort- och brädspel mot varandra,
 - 2–5 personer kan starta ett rum, dela länken eller koden, gå med från olika enheter och spela ett helt parti Vänd tian enligt reglerna i avsnitt 4.
 - Ingen spelare kan se andras dolda kort, inte ens i webbläsarens utvecklarverktyg.
 - En spelare som laddar om sidan eller tappar uppkopplingen kommer tillbaka till sin plats.
-- Sidan fungerar bra på mobilen.
+- Sidan fungerar bäst på dator, men går också att använda på mobilen.
+- Spelreglerna går att läsa när som helst.
 - Sidan är publicerad på Cloudflare och kostar inget att driva.
 
 ## 2. Spelarflöde
@@ -25,6 +26,7 @@ En webbsida där man och ens vänner kan spela kort- och brädspel mot varandra,
 ### Startsida
 - Sidans namn, **"Kortkväll"**. Det är ett platshållarnamn som är enkelt att byta.
 - En ruta per spel: **Vänd tian** (aktiv, 2–5 spelare), **Ludo** och **Finns i sjön** (nedtonade, "Kommer snart").
+- Varje aktiv spelruta har en liten knapp **Regler** som öppnar spelreglerna (se "Regelruta" i avsnitt 3).
 - Ett fält med texten "Har du en kod?" och en knapp, **Gå med**.
 
 ### Skapa rum
@@ -41,12 +43,14 @@ En webbsida där man och ens vänner kan spela kort- och brädspel mot varandra,
 - Rumskoden visas stort, med en knapp **Dela länk**. Den öppnar mobilens dela-meny om den finns, annars kopieras länken.
 - En lista över spelarna i den ordning de gick med. Den som skapade rummet är **värd** och markeras.
 - Värden har en knapp **Starta** som är aktiv när det finns 2–5 spelare.
+- En knapp **Regler** finns även här.
 - Spelare kan **lämna** väntrummet. Lämnar värden blir den som har varit med längst ny värd.
 
 ### Under spelet
 - Varje spelare ser sin egen hand och sina egna högar. För motståndarna syns namn, antal kort på handen och deras bordshögar (uppvända kort syns, nedvända visas som baksidor).
 - Allt uppdateras i realtid.
 - Tappar en spelare uppkopplingen visas den nedtonad som "frånkopplad", och spelet väntar på den.
+- När en spelare går ut fortsätter spelet för de andra. Den som är ute ser bordet och sin placering ("Du gick ut som 1:a!") och kan fortsätta titta på tills partiet är slut.
 
 ### Efter spelet
 - Resultatet visas: vem som förlorade och i vilken ordning de andra gick ut.
@@ -59,13 +63,17 @@ En webbsida där man och ens vänner kan spela kort- och brädspel mot varandra,
 ## 3. Utseende
 
 - **Stil för hela sajten: klassiskt spelbord.** Grön filt (radiell gradient från #2e8b57 till #14532d), guldaccenter (#ffd54f), en serif-rubrik och vita kort med röda och svarta färger. Kortbaksidorna är vinröda och randiga.
-- Sajten byggs först och främst för **mobilen** (porträttläge från ungefär 360 px bredd) och fungerar även på dator.
+- Sajten byggs först och främst för **dator** (från ungefär 1024 px bredd). Den fungerar också på mobilen (porträttläge från ungefär 360 px), där samma delar staplas i en kolumn.
+- Spelet styrs med musen genom att klicka på kort. Tangentbordsgenvägar ingår inte nu.
 - Allt är på **svenska**.
 
 ### Spelbordet (kompakt lista)
-Uppifrån och ned:
-1. Rubrikrad: rumskoden, spelets namn och en meny (⋯) med "Kopiera länk" och "Lämna".
-2. **Motståndare som rader:** namn, antal kort på handen och deras tre bordshögar i liten storlek. Den spelare vars tur det är markeras, och frånkopplade spelare visas nedtonade.
+**På dator:** motståndarlistan ligger i en kolumn till vänster (ungefär 260 px bred). Resten av skärmen är bordet, med högen och dragbunten i mitten och dina bordshögar och din hand i stort format längst ner.
+
+**På mobil:** allt ligger i en kolumn i ordningen nedan.
+
+1. Rubrikrad: rumskoden, spelets namn, en synlig knapp **Regler** och en meny (⋯) med "Kopiera länk" och "Lämna".
+2. **Motståndare som rader:** namn, antal kort på handen och deras tre bordshögar i liten storlek. Den spelare vars tur det är markeras, frånkopplade spelare visas nedtonade och spelare som har gått ut visas med sin placering.
 3. **Mitten:** dragbunten med antal kort och högen med översta kortet i stort format och antal kort.
 4. **Turrad:** "Din tur – lägg 9 eller högre", eller "Bertils tur".
 5. **Dina tre bordshögar:** uppvänd hög ovanpå nedvänt kort. Staplade högar visar hur många kort de innehåller.
@@ -74,6 +82,12 @@ Uppifrån och ned:
 
 - När högen vänds visas en kort animation med texten "Vänd!".
 - Under bytesfasen visar turraden "Byt kort – tryck Klar när du är nöjd", och knapparna byts ut mot **Klar**.
+
+### Regelruta
+- Knappen **Regler** finns på startsidan (på spelrutan), i väntrummet och på spelbordet.
+- Den öppnar en ruta ovanpå sidan med spelets regler i läsvänlig form: en kort sammanfattning överst och sedan reglerna från avsnitt 4 under rubriker. Spelet fortsätter i bakgrunden.
+- Rutan stängs med ✕, med Esc eller genom att klicka utanför den.
+- Reglerna är skrivna som text i webbappen, en fil per spel, så att varje nytt spel kommer med sina egna regler.
 
 ## 4. Spelregler: Vänd tian
 
@@ -105,7 +119,7 @@ Uppifrån och ned:
     - **Nedvända kort** sist, ett per drag och blint. Man väljer ett kort som vänds upp. Går det att lägga, läggs det. Annars tar man upp högen plus det kortet.
     - Har man kort på handen spelar man alltid från handen först.
 12. **Gå ut:** den som inte har några kort kvar, varken på handen eller på bordet, är ute och får sin placering. Vänder man högen med sitt sista kort är man ändå ute.
-13. **Slut:** när bara en spelare har kort kvar är spelet slut, och den spelaren **förlorar**. Den som gick ut först vinner.
+13. **Slut:** spelet fortsätter tills **alla utom en** har gått ut. Den sista spelaren som har kort kvar **förlorar**. Den som gick ut först vinner, och alla andra får placeringar i den ordning de gick ut.
 14. **Turordning:** i den ordning spelarna gick med i rummet. Spelare som är ute hoppas över.
 15. **Antal spelare:** 2–5.
 
@@ -213,7 +227,7 @@ HTTP:
   - att gå ut, att spelet tar slut och vem som förlorar,
   - att `viewFor` aldrig läcker andras hand, nedvända kort eller dragbuntens ordning.
 - **Rummet (vitest-pool-workers):** gå med, namnkrockar, fullt rum, start, återanslutning med token, nekad anslutning efter start, ny värd när värden lämnar, Spela igen och rensning via alarm.
-- **Provspel:** flera webbläsarflikar som olika spelare i den lokala utvecklingsmiljön, med ett helt parti från start till slut. Även en kontroll i mobilstorlek.
+- **Provspel:** flera webbläsarflikar som olika spelare i den lokala utvecklingsmiljön, med ett helt parti från start till slut, där spelet fortsätter efter att den första spelaren har gått ut. Kontroll främst i datorstorlek, och även i mobilstorlek. Regelrutan öppnas och stängs från alla tre ställena.
 
 ## 7. Publicering
 
