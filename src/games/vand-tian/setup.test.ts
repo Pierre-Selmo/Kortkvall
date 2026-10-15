@@ -64,6 +64,20 @@ describe('bytesfas', () => {
     expect(s.players[0].hand).toEqual(['4C', '5C']);
   });
 
+  test('stack drar direkt ett nytt kort så att handen har 3 igen', () => {
+    const s = ok(applySwapAction(swapState(['KD', '4C', '5C'], ['KH'], ['9S', '3H']), 'p0', { type: 'stack', handCard: 'KD', pileIndex: 0 }, rng));
+    expect(s.players[0].faceUp[0]).toEqual(['KH', 'KD']);
+    expect(s.players[0].hand).toEqual(['4C', '5C', '9S']);
+    expect(s.deck).toEqual(['3H']);
+  });
+
+  test('det dragna kortet kan också staplas', () => {
+    let s = ok(applySwapAction(swapState(['KD', '4C', '5C'], ['KH'], ['KS']), 'p0', { type: 'stack', handCard: 'KD', pileIndex: 0 }, rng));
+    s = ok(applySwapAction(s, 'p0', { type: 'stack', handCard: 'KS', pileIndex: 0 }, rng));
+    expect(s.players[0].faceUp[0]).toEqual(['KH', 'KD', 'KS']);
+    expect(s.players[0].hand).toEqual(['4C', '5C']);
+  });
+
   test('stack nekas vid annan valör', () => {
     const r = applySwapAction(swapState(['QD', '4C', '5C'], ['KH']), 'p0', { type: 'stack', handCard: 'QD', pileIndex: 0 }, rng);
     expect(r.ok).toBe(false);

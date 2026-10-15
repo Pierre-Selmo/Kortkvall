@@ -94,7 +94,7 @@ En webbsida där man och ens vänner kan spela kort- och brädspel mot varandra,
 1. **Utdelning:** en vanlig kortlek med 52 kort och inga jokrar blandas. Varje spelare får 3 nedvända kort, 3 uppvända kort ovanpå dem (ett per hög, alltså tre högar) och 3 kort på handen. Resten bildar dragbunten.
 2. **Bytesfas:** alla spelare gör den samtidigt.
    - Man får byta kort mellan handen och de uppvända högarna.
-   - Man får **stapla** flera kort av samma valör på **en** uppvänd hög. Alla kort i en hög måste ha samma valör.
+   - Man får **stapla** flera kort av samma valör på **en** uppvänd hög. Alla kort i en hög måste ha samma valör. Efter varje stapling drar man direkt från dragbunten tills handen har 3 kort, så att även det nya kortet kan bytas eller staplas.
    - Man får ångra stapling genom att ta tillbaka kort från en hög till handen, men varje hög måste ha minst ett kort.
    - När man trycker **Klar** fylls handen på till 3 kort från dragbunten om den har färre än 3. Spelet börjar när alla har tryckt Klar.
 3. **Vem börjar:** den som har det lägsta kortet på handen börjar. 2:or och 10:or räknas inte, så 3:an är lägst. Om flera har samma lägsta valör:

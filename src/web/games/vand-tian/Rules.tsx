@@ -16,8 +16,9 @@ export function Rules() {
       <h3>Byta kort</h3>
       <ul>
         <li>Innan spelet börjar får alla byta kort mellan handen och sina uppvända kort.</li>
-        <li>Du kan stapla flera kort av samma valör på en uppvänd hög. Klicka på högen igen för att ta tillbaka ett kort.</li>
-        <li>Tryck <strong>Klar</strong> när du är nöjd. Du får nya kort tills du har tre på handen.</li>
+        <li>Du kan stapla flera kort av samma valör på en uppvänd hög. Då drar du direkt ett nytt kort, så att du har tre på handen igen – och det nya kortet kan också bytas eller staplas.</li>
+        <li>Klicka på en staplad hög för att ta tillbaka det översta kortet till handen.</li>
+        <li>Tryck <strong>Klar</strong> när du är nöjd. Spelet börjar när alla har tryckt Klar.</li>
       </ul>
 
       <h3>Vem börjar?</h3>

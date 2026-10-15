@@ -51,6 +51,8 @@ export function applySwapAction(state: VTState, playerId: string, a: VTAction, r
         }
         p.hand.splice(h, 1);
         pile.push(a.handCard);
+        // Dra direkt så att handen har 3 kort igen och det nya kortet också kan bytas.
+        refill(s, p);
       }
       break;
     }
