@@ -21,6 +21,31 @@ function sortHand(hand: CardId[]): CardId[] {
 
 interface Toast { id: number; text: string }
 
+function useMedia(query: string): boolean {
+  const [matches, setMatches] = useState(() => matchMedia(query).matches);
+  useEffect(() => {
+    const mq = matchMedia(query);
+    const on = () => setMatches(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [query]);
+  return matches;
+}
+
+/** En bordshög: nedvänt kort med uppvända kort ovanpå. */
+function Slot({ faceDown, faceUp, size, onDown, onUp }: {
+  faceDown: boolean; faceUp: CardId[]; size: 'md' | 'lg'; onDown?: () => void; onUp?: () => void;
+}) {
+  return (
+    <div className={`slot ${size}`}>
+      {faceDown && <Card card="back" size={size} className="down" onClick={onDown} title="Nedvänt kort" />}
+      {!faceDown && faceUp.length === 0 && <Card card="empty" size={size} className="down" />}
+      {faceUp.map((c) => <Card key={c} card={c} size={size} className="up" onClick={onUp} />)}
+      {faceUp.length > 1 && <span className="count">{faceUp.length}</span>}
+    </div>
+  );
+}
+
 function eventText(e: VTEvent, nameOf: (id: string) => string, youId: string): string {
   const you = e.playerId === youId;
   const who = you ? 'Du' : nameOf(e.playerId);
@@ -46,6 +71,7 @@ export function Table({ room, send, isHost, onLeave }: TableProps) {
   const [menu, setMenu] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [burning, setBurning] = useState(false);
+  const round = useMedia('(min-width: 1024px)');
   const toastId = useRef(0);
   const lastSig = useRef<string | null>(null);
 
@@ -139,8 +165,126 @@ export function Table({ room, send, isHost, onLeave }: TableProps) {
     }
   }
 
+  const center = (
+    <div className="center">
+      <div>
+        <div className="pile" style={{ minWidth: 80 }}>
+          {view.deckCount > 0 ? <Card card="back" size="lg" /> : <Card card="empty" size="lg" />}
+        </div>
+        <div className="stack-label">Dragbunten · {view.deckCount}</div>
+      </div>
+      <div>
+        <div className={burning ? 'pile burn' : 'pile'} aria-live="polite">
+          {view.pileTop.length === 0 && <Card card="empty" size="lg" />}
+          {view.pileTop.map((c, i) => (
+            <Card
+              key={c}
+              card={c}
+              size="lg"
+              className={i < view.pileTop.length - 1 ? 'dim' : ''}
+              style={{ transform: `translateX(${(i - (view.pileTop.length - 1) / 2) * 18}px)` }}
+            />
+          ))}
+        </div>
+        <div className="stack-label">Högen · {view.pileCount}{view.burnedCount > 0 && ` · vända ${view.burnedCount}`}</div>
+      </div>
+    </div>
+  );
+
+  const turnLine = (
+    <div className={myTurn || (swapPhase && !me.ready) ? 'turn-line mine' : 'turn-line'}>{turnText}</div>
+  );
+
+  const myPiles = (
+    <div className="my-piles" aria-label="Dina bordshögar">
+      {[0, 1, 2].map((i) => (
+        <Slot
+          key={i}
+          size="lg"
+          faceDown={me.faceDown[i]}
+          faceUp={me.faceUp[i]}
+          onDown={myTurn && view.mySource === 'faceDown' ? () => onFaceDown(i) : undefined}
+          onUp={pileClickable(i) ? () => onMyPile(i) : undefined}
+        />
+      ))}
+    </div>
+  );
+
+  const handRow = (
+    <div className="hand" aria-label="Din hand">
+      {hand.map((c) => (
+        <Card
+          key={c}
+          card={c}
+          size="lg"
+          selected={selected.includes(c)}
+          onClick={(swapPhase && !me.ready) || (myTurn && view.mySource === 'hand') ? () => onHandCard(c) : undefined}
+        />
+      ))}
+    </div>
+  );
+
+  const actions = (
+    <div className="actions">
+      {swapPhase && !me.ready && <button className="btn" onClick={() => { setSelected([]); act({ type: 'ready' }); }}>Klar</button>}
+      {!swapPhase && myTurn && selected.length > 0 && (
+        <button className="btn" onClick={playSelected}>Lägg {selected.length}</button>
+      )}
+      {!swapPhase && view.canChance && <button className="btn secondary" onClick={() => act({ type: 'chance' })}>Chansa</button>}
+      {!swapPhase && view.canPickUp && <button className="btn secondary" onClick={() => act({ type: 'pickUp' })}>Ta upp högen</button>}
+    </div>
+  );
+
+  const listLayout = (
+    <div className="table-grid">
+      <aside className="opponents" aria-label="Motståndare">
+        {opponents.map((p) => (
+          <Opponent key={p.id} p={p} room={room} turn={view.currentPlayerId === p.id} swap={swapPhase} />
+        ))}
+      </aside>
+      <section className="board">
+        {center}
+        {turnLine}
+        {myPiles}
+        {handRow}
+        {actions}
+      </section>
+    </div>
+  );
+
+  // Runt bordet: jag sitter längst ner, de andra i turordning medurs (till vänster om mig först).
+  const myIndex = view.players.findIndex((p) => p.id === youId);
+  const seated = [...view.players.slice(myIndex + 1), ...view.players.slice(0, myIndex)];
+  const roundLayout = (
+    <section className="round-board">
+      <div className="round-table">
+        <div className="felt">
+          {seated.map((p, k) => {
+            const angle = ((90 + ((k + 1) * 360) / view.players.length) * Math.PI) / 180;
+            return (
+              <Seat
+                key={p.id}
+                p={p}
+                room={room}
+                turn={view.currentPlayerId === p.id}
+                swap={swapPhase}
+                x={50 + 40 * Math.cos(angle)}
+                y={48 + 32 * Math.sin(angle)}
+              />
+            );
+          })}
+          <div className="felt-center">{center}</div>
+          <div className={myTurn ? 'my-seat turn' : 'my-seat'}>{myPiles}</div>
+        </div>
+      </div>
+      {turnLine}
+      {handRow}
+      {actions}
+    </section>
+  );
+
   return (
-    <div className="table-page">
+    <div className={round ? 'table-page round' : 'table-page'}>
       <header className="topbar">
         <span className="code">{room.code}</span>
         <span className="title">Vänd tian</span>
@@ -156,83 +300,7 @@ export function Table({ room, send, isHost, onLeave }: TableProps) {
         </div>
       </header>
 
-      <div className="table-grid">
-        <aside className="opponents" aria-label="Motståndare">
-          {opponents.map((p) => (
-            <Opponent key={p.id} p={p} room={room} turn={view.currentPlayerId === p.id} swap={swapPhase} />
-          ))}
-        </aside>
-
-        <section className="board">
-          <div className="center">
-            <div>
-              <div className="pile" style={{ minWidth: 80 }}>
-                {view.deckCount > 0 ? <Card card="back" size="lg" /> : <Card card="empty" size="lg" />}
-              </div>
-              <div className="stack-label">Dragbunten · {view.deckCount}</div>
-            </div>
-            <div>
-              <div className={burning ? 'pile burn' : 'pile'} aria-live="polite">
-                {view.pileTop.length === 0 && <Card card="empty" size="lg" />}
-                {view.pileTop.map((c, i) => (
-                  <Card
-                    key={c}
-                    card={c}
-                    size="lg"
-                    className={i < view.pileTop.length - 1 ? 'dim' : ''}
-                    style={{ transform: `translateX(${(i - (view.pileTop.length - 1) / 2) * 18}px)` }}
-                  />
-                ))}
-              </div>
-              <div className="stack-label">Högen · {view.pileCount}{view.burnedCount > 0 && ` · vända ${view.burnedCount}`}</div>
-            </div>
-          </div>
-
-          <div className={myTurn || (swapPhase && !me.ready) ? 'turn-line mine' : 'turn-line'}>{turnText}</div>
-
-          <div className="my-piles" aria-label="Dina bordshögar">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="slot">
-                {me.faceDown[i] && (
-                  <Card
-                    card="back"
-                    size="lg"
-                    className="down"
-                    onClick={myTurn && view.mySource === 'faceDown' ? () => onFaceDown(i) : undefined}
-                    title="Nedvänt kort"
-                  />
-                )}
-                {!me.faceDown[i] && me.faceUp[i].length === 0 && <Card card="empty" size="lg" className="down" />}
-                {me.faceUp[i].map((c) => (
-                  <Card key={c} card={c} size="lg" className="up" onClick={pileClickable(i) ? () => onMyPile(i) : undefined} />
-                ))}
-                {me.faceUp[i].length > 1 && <span className="count">{me.faceUp[i].length}</span>}
-              </div>
-            ))}
-          </div>
-
-          <div className="hand" aria-label="Din hand">
-            {hand.map((c) => (
-              <Card
-                key={c}
-                card={c}
-                size="lg"
-                selected={selected.includes(c)}
-                onClick={(swapPhase && !me.ready) || (myTurn && view.mySource === 'hand') ? () => onHandCard(c) : undefined}
-              />
-            ))}
-          </div>
-
-          <div className="actions">
-            {swapPhase && !me.ready && <button className="btn" onClick={() => { setSelected([]); act({ type: 'ready' }); }}>Klar</button>}
-            {!swapPhase && myTurn && selected.length > 0 && (
-              <button className="btn" onClick={playSelected}>Lägg {selected.length}</button>
-            )}
-            {!swapPhase && view.canChance && <button className="btn secondary" onClick={() => act({ type: 'chance' })}>Chansa</button>}
-            {!swapPhase && view.canPickUp && <button className="btn secondary" onClick={() => act({ type: 'pickUp' })}>Ta upp högen</button>}
-          </div>
-        </section>
-      </div>
+      {round ? roundLayout : listLayout}
 
       {room.phase === 'finished' && room.result && (
         <div className="modal-backdrop">
@@ -270,10 +338,7 @@ function Opponent({ p, room, turn, swap }: { p: VTPublicPlayer; room: RoomSnapsh
     <div className={cls}>
       <div className="name">
         <span>{info?.name ?? '?'}</span>
-        {room.result?.loserId === p.id ? <span className="badge place">förlorade</span>
-          : p.place ? <span className="badge gold place">{ordinal(p.place)}</span>
-          : info && !info.connected ? <span className="badge">frånkopplad</span>
-          : swap && p.ready ? <span className="badge">klar</span> : null}
+        {statusBadge(p, room, swap)}
       </div>
       <div className="meta">{p.handCount} kort på handen</div>
       <div className="mini-piles">
@@ -283,6 +348,41 @@ function Opponent({ p, room, turn, swap }: { p: VTPublicPlayer; room: RoomSnapsh
           if (p.faceDown[i]) return <Card key={i} card="back" size="sm" />;
           return <Card key={i} card="empty" size="sm" />;
         })}
+      </div>
+    </div>
+  );
+}
+
+function statusBadge(p: VTPublicPlayer, room: RoomSnapshot, swap: boolean) {
+  const info = room.players.find((x) => x.id === p.id);
+  if (room.result?.loserId === p.id) return <span className="badge place">förlorade</span>;
+  if (p.place) return <span className="badge gold place">{ordinal(p.place)}</span>;
+  if (info && !info.connected) return <span className="badge">frånkopplad</span>;
+  if (swap && p.ready) return <span className="badge">klar</span>;
+  return null;
+}
+
+/** En motståndare som sitter vid bordet: namnskylt, korten på handen och bordshögarna mot mitten. */
+function Seat({ p, room, turn, swap, x, y }: {
+  p: VTPublicPlayer; room: RoomSnapshot; turn: boolean; swap: boolean; x: number; y: number;
+}) {
+  const info = room.players.find((q) => q.id === p.id);
+  const cls = ['seat', turn && 'turn', info && !info.connected && 'off', p.place && 'out'].filter(Boolean).join(' ');
+  const shown = Math.min(p.handCount, 7);
+  return (
+    <div className={cls} style={{ left: `${x}%`, top: `${y}%` }}>
+      <div className="seat-head">
+        <div className="seat-plate">
+          <span className="seat-name">{info?.name ?? '?'}</span>
+          {statusBadge(p, room, swap)}
+        </div>
+        <div className="seat-hand" title={`${p.handCount} kort på handen`}>
+          {Array.from({ length: shown }, (_, i) => <Card key={i} card="back" size="sm" />)}
+          <span className="seat-count">{p.handCount}</span>
+        </div>
+      </div>
+      <div className="seat-piles">
+        {[0, 1, 2].map((i) => <Slot key={i} size="md" faceDown={p.faceDown[i]} faceUp={p.faceUp[i]} />)}
       </div>
     </div>
   );
