@@ -1,7 +1,7 @@
 import type { Rng } from '../../shared/rng';
-import { fail, type ActionResult } from '../types';
+import { fail, type ActionResult, type GameResult } from '../types';
 import { canPlayOn, rankOf } from './cards';
-import { isOut, sourceOf } from './legal';
+import { canChance, canPickUp, isOut, sourceOf } from './legal';
 import { refill, type VTAction, type VTState } from './state';
 
 function nextActive(s: VTState, from: number): number {
@@ -77,7 +77,67 @@ export function applyPlayAction(s: VTState, playerId: string, a: VTAction, _rng:
       afterPlay(n, idx);
       return { ok: true, state: n };
     }
+    case 'chance': {
+      if (!canChance(s, playerId)) {
+        return fail(s.deck.length === 0 ? 'Dragbunten är tom' : 'Du kan bara chansa när du inte kan lägga');
+      }
+      const card = n.deck.shift()!;
+      if (canPlayOn(rankOf(card), n.pile)) {
+        n.events.push({ type: 'chance', playerId, card, success: true });
+        n.pile.push(card);
+        afterPlay(n, idx);
+      } else {
+        n.events.push({ type: 'chance', playerId, card, success: false });
+        pickUpPile(n, idx, [card]);
+      }
+      return { ok: true, state: n };
+    }
+    case 'pickUp': {
+      if (!canPickUp(s, playerId)) return fail('Du kan bara ta upp högen när du inte kan lägga');
+      pickUpPile(n, idx, []);
+      return { ok: true, state: n };
+    }
+    case 'playFaceUp': {
+      if (src !== 'faceUp') return fail('Du måste spela från handen först');
+      const pile = Number.isInteger(a.pileIndex) ? p.faceUp[a.pileIndex] : undefined;
+      if (!pile || pile.length === 0) return fail('Ogiltig hög');
+      if (!canPlayOn(rankOf(pile[0]), n.pile)) return fail(tooLow(n));
+      n.pile.push(...pile);
+      p.faceUp[a.pileIndex] = [];
+      afterPlay(n, idx);
+      return { ok: true, state: n };
+    }
+    case 'playFaceDown': {
+      if (src !== 'faceDown') return fail('Du måste spela dina uppvända kort först');
+      const card = Number.isInteger(a.index) ? p.faceDown[a.index] : undefined;
+      if (!card) return fail('Ogiltigt kort');
+      p.faceDown[a.index] = null;
+      if (canPlayOn(rankOf(card), n.pile)) {
+        n.events.push({ type: 'faceDown', playerId, card, success: true });
+        n.pile.push(card);
+        afterPlay(n, idx);
+      } else {
+        n.events.push({ type: 'faceDown', playerId, card, success: false });
+        pickUpPile(n, idx, [card]);
+      }
+      return { ok: true, state: n };
+    }
     default:
       return fail('Ogiltigt drag');
   }
+}
+
+/** The player takes the pile (plus `extra` cards) into the hand; the turn passes. */
+function pickUpPile(s: VTState, idx: number, extra: string[]): void {
+  const p = s.players[idx];
+  const taken = [...s.pile, ...extra];
+  p.hand.push(...taken);
+  s.pile = [];
+  s.events.push({ type: 'pickUp', playerId: p.id, count: taken.length });
+  s.current = nextActive(s, idx);
+}
+
+export function vtResult(s: VTState): GameResult | null {
+  if (s.phase !== 'finished') return null;
+  return { placements: [...s.finishOrder], loserId: s.finishOrder[s.finishOrder.length - 1] };
 }
