@@ -48,9 +48,10 @@ describe('bytesfas', () => {
     expect(s.players[0].faceUp[0]).toEqual(['KH']);
   });
 
-  test('swap nekas på en staplad hög', () => {
-    const r = applySwapAction(swapState(['AH', '4C'], ['KH', 'KD']), 'p0', { type: 'swap', handCard: 'AH', pileIndex: 0 }, rng);
-    expect(r.ok).toBe(false);
+  test('swap med en staplad hög tar upp alla kort i högen', () => {
+    const s = ok(applySwapAction(swapState(['AH', '4C'], ['KH', 'KD']), 'p0', { type: 'swap', handCard: 'AH', pileIndex: 0 }, rng));
+    expect(s.players[0].faceUp[0]).toEqual(['AH']);
+    expect(s.players[0].hand).toEqual(['KH', 'KD', '4C']);
   });
 
   test('swap nekas för kort som inte finns på handen', () => {

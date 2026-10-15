@@ -3,7 +3,7 @@ export function Rules() {
     <>
       <h2>Vänd tian</h2>
       <div className="summary">
-        <strong>Kort sagt:</strong> lägg lika högt eller högre än översta kortet i högen. 2:an går på allt,
+        <strong>Kort sagt:</strong> lägg lika högt eller högre än översta kortet i högen. 2:an går på allt och ger dig en tur till,
         10:an vänder högen. Bli av med alla dina kort – den som har kort kvar sist förlorar.
       </div>
 
@@ -16,6 +16,7 @@ export function Rules() {
       <h3>Byta kort</h3>
       <ul>
         <li>Innan spelet börjar får alla byta kort mellan handen och sina uppvända kort.</li>
+        <li>Byter du mot en hög med två eller fler kort tar du upp hela högen till handen.</li>
         <li>Du kan stapla flera kort av samma valör på en uppvänd hög. Då drar du direkt ett nytt kort, så att du har tre på handen igen – och det nya kortet kan också bytas eller staplas.</li>
         <li>Klicka på en staplad hög för att ta tillbaka det översta kortet till handen.</li>
         <li>Tryck <strong>Klar</strong> när du är nöjd. Spelet börjar när alla har tryckt Klar.</li>
@@ -31,7 +32,7 @@ export function Rules() {
       <ul>
         <li>Ordningen är 3, 4, 5, 6, 7, 8, 9, knekt, dam, kung, ess.</li>
         <li>Lägg ett eller flera kort av samma valör som är lika höga eller högre än översta kortet. På en tom hög går allt.</li>
-        <li><strong>2:an</strong> går på vad som helst, och efter en 2:a får nästa lägga vad som helst.</li>
+        <li><strong>2:an</strong> går på vad som helst. Lägger du en 2:a lägger du igen, och då får du lägga vad som helst.</li>
         <li><strong>10:an</strong> går på vad som helst och vänder högen – den tas ur spelet och du lägger igen.</li>
         <li><strong>Fyra lika</strong> överst i högen vänder också högen, och du lägger igen.</li>
         <li>Efter ditt drag drar du kort tills du har tre på handen, så länge dragbunten räcker.</li>

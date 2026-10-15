@@ -12,5 +12,5 @@ export function toggleSelect(selected: CardId[], card: CardId): CardId[] {
 export function swapIntent(handCard: CardId, pile: CardId[]): VTAction['type'] | null {
   if (pile.length === 0) return null;
   if (rankOf(pile[0]) === rankOf(handCard)) return 'stack';
-  return pile.length === 1 ? 'swap' : null;
+  return 'swap';
 }

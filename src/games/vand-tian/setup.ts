@@ -42,8 +42,9 @@ export function applySwapAction(state: VTState, playerId: string, a: VTAction, r
       const h = p.hand.indexOf(a.handCard);
       if (!pile || h < 0) return fail('Ogiltigt drag');
       if (a.type === 'swap') {
-        if (pile.length !== 1) return fail('Du kan bara byta mot en hög med ett kort');
-        p.hand[h] = pile[0];
+        // Byter man mot en staplad hög tar man upp alla kort i högen.
+        if (pile.length === 0) return fail('Den högen är tom');
+        p.hand.splice(h, 1, ...pile);
         p.faceUp[a.pileIndex] = [a.handCard];
       } else {
         if (pile.length === 0 || rankOf(pile[0]) !== rankOf(a.handCard)) {

@@ -16,6 +16,6 @@ test('swapIntent', () => {
   expect(swapIntent('KD', ['KH'])).toBe('stack');
   expect(swapIntent('KD', ['KH', 'KS'])).toBe('stack');
   expect(swapIntent('4C', ['KH'])).toBe('swap');
-  expect(swapIntent('4C', ['KH', 'KS'])).toBeNull();
+  expect(swapIntent('4C', ['KH', 'KS'])).toBe('swap');
   expect(swapIntent('4C', [])).toBeNull();
 });

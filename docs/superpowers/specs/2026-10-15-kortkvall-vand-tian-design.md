@@ -93,7 +93,7 @@ En webbsida där man och ens vänner kan spela kort- och brädspel mot varandra,
 
 1. **Utdelning:** en vanlig kortlek med 52 kort och inga jokrar blandas. Varje spelare får 3 nedvända kort, 3 uppvända kort ovanpå dem (ett per hög, alltså tre högar) och 3 kort på handen. Resten bildar dragbunten.
 2. **Bytesfas:** alla spelare gör den samtidigt.
-   - Man får byta kort mellan handen och de uppvända högarna.
+   - Man får byta kort mellan handen och de uppvända högarna. Byter man mot en hög med två eller fler kort tar man upp alla kort i högen till handen.
    - Man får **stapla** flera kort av samma valör på **en** uppvänd hög. Alla kort i en hög måste ha samma valör. Efter varje stapling drar man direkt från dragbunten tills handen har 3 kort, så att även det nya kortet kan bytas eller staplas.
    - Man får ångra stapling genom att ta tillbaka kort från en hög till handen, men varje hög måste ha minst ett kort.
    - När man trycker **Klar** fylls handen på till 3 kort från dragbunten om den har färre än 3. Spelet börjar när alla har tryckt Klar.
@@ -105,7 +105,7 @@ En webbsida där man och ens vänner kan spela kort- och brädspel mot varandra,
    Har ingen spelare något annat än 2:or och 10:or på handen avgör slumpen.
 4. **Valörordning:** 3 < 4 < 5 < 6 < 7 < 8 < 9 < J < Q < K < A. 2:an och 10:an är specialkort.
 5. **Lägga från handen:** man lägger ett eller flera kort av **samma valör** som är lika höga eller högre än det översta kortet i högen. Man väljer själv hur många av valören man lägger. På en tom hög får man lägga vad som helst.
-6. **2:an** får läggas på vad som helst. Efter en 2:a får nästa spelare lägga vad som helst.
+6. **2:an** får läggas på vad som helst. Den som lägger en 2:a lägger igen och får då lägga vad som helst (påfyllning sker först, som efter en vändning).
 7. **10:an** får läggas på vad som helst och **vänder högen**: högen, inklusive 10:an, tas ur spelet. Samma spelare lägger sedan igen på den tomma högen.
 8. **Fyra lika:** om de fyra översta korten i högen har samma valör vänds högen, oavsett om de lades av en eller flera spelare och i ett eller flera drag. Samma spelare lägger sedan igen.
 9. **Påfyllning:** efter sitt drag fyller man på handen till 3 kort från dragbunten, så länge den räcker. Detta sker även innan man lägger igen efter att ha vänt högen.
@@ -167,7 +167,7 @@ interface GameDefinition<State, Action, View> {
 
 ### Vänd tian: drag (Action)
 
-- `swap { handCard, pileIndex }`: byt ett handkort mot den uppvända högen (gäller bara högar med ett kort).
+- `swap { handCard, pileIndex }`: byt ett handkort mot den uppvända högen. Har högen flera kort tas alla upp till handen.
 - `stack { handCard, pileIndex }`: lägg handkortet på en hög med samma valör.
 - `unstack { pileIndex }`: ta tillbaka det översta kortet från en hög med fler än ett kort.
 - `ready`: klar med bytesfasen.

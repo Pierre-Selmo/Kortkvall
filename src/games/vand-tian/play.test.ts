@@ -55,12 +55,27 @@ test('nekas när källan inte är handen', () => {
   expect(applyPlayAction(s, 'p0', play('KS'), rng).ok).toBe(false);
 });
 
-test('2:an går på ess, och nästa spelare får lägga 3', () => {
-  let s = testState({ pile: ['AS'], players: [{ hand: ['2H', '4C'] }, other] });
+test('2:an går på ess, och samma spelare lägger igen och får lägga 3', () => {
+  let s = testState({ pile: ['AS'], deck: ['9H'], players: [{ hand: ['2H', '3C', '4C'] }, other] });
   s = act(s, play('2H'));
+  expect(s.current).toBe(0);
+  expect(s.players[0].hand).toHaveLength(3); // påfyllning före omspel
+  expect(s.pile).toEqual(['AS', '2H']);
+  s = act(s, play('3C'));
+  expect(s.pile.at(-1)).toBe('3C');
   expect(s.current).toBe(1);
-  s = act(s, play('3D'));
-  expect(s.pile.at(-1)).toBe('3D');
+});
+
+test('2:an som chansas fram ger också en tur till', () => {
+  const s = act(testState({ pile: ['AS'], deck: ['2D', '5H'], players: [{ hand: ['4C', '5C', '6C'] }, other] }), { type: 'chance' });
+  expect(s.pile.at(-1)).toBe('2D');
+  expect(s.current).toBe(0);
+});
+
+test('går ut med en 2:a och turen går vidare', () => {
+  const s = act(testState({ pile: ['AS'], players: [{ hand: ['2H'] }, other, other] }), play('2H'));
+  expect(s.finishOrder).toEqual(['p0']);
+  expect(s.current).toBe(1);
 });
 
 test('10:an vänder högen och samma spelare lägger igen', () => {

@@ -29,6 +29,8 @@ function afterPlay(s: VTState, playerIndex: number): void {
   const top4 = s.pile.slice(-4).map(rankOf);
   const burned = rankOf(s.pile[s.pile.length - 1]) === '10'
     || (top4.length === 4 && top4.every((r) => r === top4[0]));
+  // Efter en 2:a lägger samma spelare igen (och får då lägga vad som helst).
+  const again = burned || rankOf(s.pile[s.pile.length - 1]) === '2';
   if (burned) {
     s.burnedCount += s.pile.length;
     s.pile = [];
@@ -45,7 +47,7 @@ function afterPlay(s: VTState, playerIndex: number): void {
       return;
     }
     s.current = nextPlayer(s, playerIndex);
-  } else if (!burned) {
+  } else if (!again) {
     s.current = nextPlayer(s, playerIndex);
   }
 }
