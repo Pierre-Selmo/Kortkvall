@@ -15,6 +15,8 @@ export function isVTAction(a: unknown): a is VTAction {
     case 'swap':
     case 'stack':
       return isCardId(o.handCard) && isIndex(o.pileIndex);
+    case 'stackOther':
+      return isCardId(o.handCard) && isIndex(o.pileIndex) && typeof o.targetId === 'string';
     case 'unstack':
     case 'playFaceUp':
       return isIndex(o.pileIndex);

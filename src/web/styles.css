@@ -223,6 +223,8 @@ button, input { font: inherit; }
 .card.clickable:hover { box-shadow: 0 0 0 3px rgba(255, 213, 79, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4); }
 .card.selected { transform: translateY(-16px); box-shadow: 0 0 0 3px var(--gold), 0 8px 14px rgba(0, 0, 0, 0.45); }
 .card.dim { filter: brightness(0.75); }
+.card.target { box-shadow: 0 0 0 3px var(--gold), 0 0 14px rgba(255, 213, 79, 0.7); animation: target-pulse 1.2s ease-in-out infinite; }
+@keyframes target-pulse { 50% { box-shadow: 0 0 0 3px var(--gold), 0 0 4px rgba(255, 213, 79, 0.3); } }
 
 /* ---------- väntrum ---------- */
 

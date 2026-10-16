@@ -96,6 +96,7 @@ En webbsida där man och ens vänner kan spela kort- och brädspel mot varandra,
    - Man får byta kort mellan handen och de uppvända högarna. Byter man mot en hög med två eller fler kort tar man upp alla kort i högen till handen.
    - Man får **stapla** flera kort av samma valör på **en** uppvänd hög. Alla kort i en hög måste ha samma valör. Efter varje stapling drar man direkt från dragbunten tills handen har 3 kort, så att även det nya kortet kan bytas eller staplas.
    - Man får ångra stapling genom att ta tillbaka kort från en hög till handen, men varje hög måste ha minst ett kort.
+   - Man får lägga ett handkort på en **annan spelares** uppvända hög om högen har samma valör. Man drar sedan direkt till 3 kort. Man får aldrig ta eller byta bort någon annans kort. Det går bara innan man själv har tryckt Klar.
    - När man trycker **Klar** fylls handen på till 3 kort från dragbunten om den har färre än 3. Spelet börjar när alla har tryckt Klar.
 3. **Vem börjar:** den som har det lägsta kortet på handen börjar. 2:or och 10:or räknas inte, så 3:an är lägst. Om flera har samma lägsta valör:
    1. börjar den som har **hjärter** av den valören,
@@ -170,6 +171,7 @@ interface GameDefinition<State, Action, View> {
 - `swap { handCard, pileIndex }`: byt ett handkort mot den uppvända högen. Har högen flera kort tas alla upp till handen.
 - `stack { handCard, pileIndex }`: lägg handkortet på en hög med samma valör.
 - `unstack { pileIndex }`: ta tillbaka det översta kortet från en hög med fler än ett kort.
+- `stackOther { handCard, targetId, pileIndex }`: bytesfasen, lägg ett handkort på en annan spelares uppvända hög med samma valör.
 - `ready`: klar med bytesfasen.
 - `play { cards }`: lägg ett eller flera kort av samma valör från handen.
 - `playFaceUp { pileIndex }`: lägg en hel uppvänd hög.

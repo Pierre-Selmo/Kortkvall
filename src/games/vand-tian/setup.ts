@@ -57,6 +57,21 @@ export function applySwapAction(state: VTState, playerId: string, a: VTAction, r
       }
       break;
     }
+    case 'stackOther': {
+      const target = s.players.find((pl) => pl.id === a.targetId);
+      if (!target || target.id === playerId) return fail('Ogiltigt drag');
+      const pile = target.faceUp[a.pileIndex];
+      const h = p.hand.indexOf(a.handCard);
+      if (!pile || h < 0) return fail('Ogiltigt drag');
+      if (pile.length === 0 || rankOf(pile[0]) !== rankOf(a.handCard)) {
+        return fail('Du kan bara lägga på en hög med samma valör');
+      }
+      p.hand.splice(h, 1);
+      pile.push(a.handCard);
+      s.events.push({ type: 'gift', playerId, targetId: target.id, card: a.handCard });
+      refill(s, p);
+      break;
+    }
     case 'unstack': {
       const pile = p.faceUp[a.pileIndex];
       if (!pile || pile.length < 2) return fail('Varje hög måste ha minst ett kort');

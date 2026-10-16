@@ -15,7 +15,8 @@ export type VTEvent =
   | { type: 'pickUp'; playerId: string; count: number }
   | { type: 'chance'; playerId: string; card: CardId; success: boolean }
   | { type: 'faceDown'; playerId: string; card: CardId; success: boolean }
-  | { type: 'out'; playerId: string; place: number };
+  | { type: 'out'; playerId: string; place: number }
+  | { type: 'gift'; playerId: string; targetId: string; card: CardId };
 
 export interface VTState {
   phase: 'swap' | 'play' | 'finished';
@@ -38,6 +39,8 @@ export type VTAction =
   | { type: 'swap'; handCard: CardId; pileIndex: number }
   | { type: 'stack'; handCard: CardId; pileIndex: number }
   | { type: 'unstack'; pileIndex: number }
+  /** Bytesfasen: lägg ett handkort på en annan spelares uppvända hög med samma valör. */
+  | { type: 'stackOther'; handCard: CardId; targetId: string; pileIndex: number }
   | { type: 'ready' }
   | { type: 'play'; cards: CardId[] }
   | { type: 'playFaceUp'; pileIndex: number }

@@ -33,14 +33,16 @@ function useMedia(query: string): boolean {
 }
 
 /** En bordshög: nedvänt kort med uppvända kort ovanpå. */
-function Slot({ faceDown, faceUp, size, onDown, onUp }: {
-  faceDown: boolean; faceUp: CardId[]; size: 'md' | 'lg'; onDown?: () => void; onUp?: () => void;
+function Slot({ faceDown, faceUp, size, onDown, onUp, target }: {
+  faceDown: boolean; faceUp: CardId[]; size: 'md' | 'lg'; onDown?: () => void; onUp?: () => void; target?: boolean;
 }) {
   return (
     <div className={`slot ${size}`}>
       {faceDown && <Card card="back" size={size} className="down" onClick={onDown} title="Nedvänt kort" />}
       {!faceDown && faceUp.length === 0 && <Card card="empty" size={size} className="down" />}
-      {faceUp.map((c) => <Card key={c} card={c} size={size} className="up" onClick={onUp} />)}
+      {faceUp.map((c, i) => (
+        <Card key={c} card={c} size={size} className={target && i === faceUp.length - 1 ? 'up target' : 'up'} onClick={onUp} />
+      ))}
       {faceUp.length > 1 && <span className="count">{faceUp.length}</span>}
     </div>
   );
@@ -55,6 +57,10 @@ function eventText(e: VTEvent, nameOf: (id: string) => string, youId: string): s
     case 'chance': return `${who} chansade: ${cardLabel(e.card)} – ${e.success ? 'lyckades!' : 'tog upp högen'}`;
     case 'faceDown': return `${who} vände ${cardLabel(e.card)} – ${e.success ? 'gick att lägga!' : 'tog upp högen'}`;
     case 'out': return you ? `Du gick ut som ${ordinal(e.place)}!` : `${who} gick ut som ${ordinal(e.place)}`;
+    case 'gift': {
+      const to = e.targetId === youId ? 'din' : `${genitive(nameOf(e.targetId))}`;
+      return `${who} lade ${cardLabel(e.card)} på ${to} hög`;
+    }
   }
 }
 
@@ -156,6 +162,17 @@ export function Table({ room, send, isHost, onLeave }: TableProps) {
   const pileClickable = (i: number) => (swapPhase && !me.ready && (selected.length > 0 || me.faceUp[i].length > 1))
     || (myTurn && view.mySource === 'faceUp' && me.faceUp[i].length > 0);
 
+  // Bytesfasen: med ett markerat handkort går det att lägga på en annans hög med samma valör.
+  const pileTarget = (p: VTPublicPlayer): PileTarget => (i) => {
+    const card = selected[0];
+    const pile = p.faceUp[i];
+    if (!swapPhase || me.ready || !card || pile.length === 0 || rankOf(pile[0]) !== rankOf(card)) return undefined;
+    return () => {
+      act({ type: 'stackOther', handCard: card, targetId: p.id, pileIndex: i });
+      setSelected([]);
+    };
+  };
+
   async function copyLink() {
     setMenu(false);
     try {
@@ -239,7 +256,7 @@ export function Table({ room, send, isHost, onLeave }: TableProps) {
     <div className="table-grid">
       <aside className="opponents" aria-label="Motståndare">
         {opponents.map((p) => (
-          <Opponent key={p.id} p={p} room={room} turn={view.currentPlayerId === p.id} swap={swapPhase} />
+          <Opponent key={p.id} p={p} room={room} turn={view.currentPlayerId === p.id} swap={swapPhase} target={pileTarget(p)} />
         ))}
       </aside>
       <section className="board">
@@ -270,6 +287,7 @@ export function Table({ room, send, isHost, onLeave }: TableProps) {
                 swap={swapPhase}
                 x={50 + 40 * Math.cos(angle)}
                 y={48 + 32 * Math.sin(angle)}
+                target={pileTarget(p)}
               />
             );
           })}
@@ -331,7 +349,10 @@ export function Table({ room, send, isHost, onLeave }: TableProps) {
   );
 }
 
-function Opponent({ p, room, turn, swap }: { p: VTPublicPlayer; room: RoomSnapshot; turn: boolean; swap: boolean }) {
+/** Klickhanterare för en motståndares uppvända hög, eller undefined om man inte kan lägga där. */
+type PileTarget = (i: number) => (() => void) | undefined;
+
+function Opponent({ p, room, turn, swap, target }: { p: VTPublicPlayer; room: RoomSnapshot; turn: boolean; swap: boolean; target: PileTarget }) {
   const info = room.players.find((x) => x.id === p.id);
   const cls = ['opponent', turn && 'turn', info && !info.connected && 'off'].filter(Boolean).join(' ');
   return (
@@ -344,7 +365,7 @@ function Opponent({ p, room, turn, swap }: { p: VTPublicPlayer; room: RoomSnapsh
       <div className="mini-piles">
         {[0, 1, 2].map((i) => {
           const up = p.faceUp[i];
-          if (up.length) return <span key={i} style={{ position: 'relative' }}><Card card={up[up.length - 1]} size="sm" />{up.length > 1 && <span className="badge gold" style={{ position: 'absolute', top: -6, right: -10, fontSize: 10, padding: '0 4px' }}>{up.length}</span>}</span>;
+          if (up.length) return <span key={i} style={{ position: 'relative' }}><Card card={up[up.length - 1]} size="sm" onClick={target(i)} className={target(i) ? 'target' : ''} />{up.length > 1 && <span className="badge gold" style={{ position: 'absolute', top: -6, right: -10, fontSize: 10, padding: '0 4px' }}>{up.length}</span>}</span>;
           if (p.faceDown[i]) return <Card key={i} card="back" size="sm" />;
           return <Card key={i} card="empty" size="sm" />;
         })}
@@ -363,8 +384,8 @@ function statusBadge(p: VTPublicPlayer, room: RoomSnapshot, swap: boolean) {
 }
 
 /** En motståndare som sitter vid bordet: namnskylt, korten på handen och bordshögarna mot mitten. */
-function Seat({ p, room, turn, swap, x, y }: {
-  p: VTPublicPlayer; room: RoomSnapshot; turn: boolean; swap: boolean; x: number; y: number;
+function Seat({ p, room, turn, swap, x, y, target }: {
+  p: VTPublicPlayer; room: RoomSnapshot; turn: boolean; swap: boolean; x: number; y: number; target: PileTarget;
 }) {
   const info = room.players.find((q) => q.id === p.id);
   const cls = ['seat', turn && 'turn', info && !info.connected && 'off', p.place && 'out'].filter(Boolean).join(' ');
@@ -382,7 +403,9 @@ function Seat({ p, room, turn, swap, x, y }: {
         </div>
       </div>
       <div className="seat-piles">
-        {[0, 1, 2].map((i) => <Slot key={i} size="md" faceDown={p.faceDown[i]} faceUp={p.faceUp[i]} />)}
+        {[0, 1, 2].map((i) => (
+          <Slot key={i} size="md" faceDown={p.faceDown[i]} faceUp={p.faceUp[i]} onUp={target(i)} target={!!target(i)} />
+        ))}
       </div>
     </div>
   );

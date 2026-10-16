@@ -158,3 +158,46 @@ describe('startingPlayer', () => {
     expect(startingPlayer(ps, () => 0.99)).toBe(2);
   });
 });
+
+describe('lägga på någon annans hög i bytesfasen', () => {
+  const two = (deck: string[] = []) => testState({
+    phase: 'swap',
+    deck,
+    players: [
+      { hand: ['6H', '4C', '5C'], faceUp: [['KS'], ['QS'], ['JS']], faceDown: ['7S', '8S', '9S'], ready: false },
+      { hand: ['3D', '4D', '5D'], faceUp: [['6D'], ['7D'], ['8D']], faceDown: ['9D', 'JD', 'QD'], ready: false },
+    ],
+  });
+
+  test('lägger ett kort med samma valör på motståndarens hög och drar nytt', () => {
+    const s = ok(applySwapAction(two(['2C']), 'p0', { type: 'stackOther', handCard: '6H', targetId: 'p1', pileIndex: 0 }, rng));
+    expect(s.players[1].faceUp[0]).toEqual(['6D', '6H']);
+    expect(s.players[0].hand).toEqual(['4C', '5C', '2C']);
+    expect(s.events).toContainEqual({ type: 'gift', playerId: 'p0', targetId: 'p1', card: '6H' });
+  });
+
+  test('nekas vid annan valör', () => {
+    expect(applySwapAction(two(), 'p0', { type: 'stackOther', handCard: '4C', targetId: 'p1', pileIndex: 0 }, rng).ok).toBe(false);
+  });
+
+  test('nekas på sin egen hög, okänd spelare och kort som inte finns på handen', () => {
+    const s = two();
+    expect(applySwapAction(s, 'p0', { type: 'stackOther', handCard: '6H', targetId: 'p0', pileIndex: 0 }, rng).ok).toBe(false);
+    expect(applySwapAction(s, 'p0', { type: 'stackOther', handCard: '6H', targetId: 'x', pileIndex: 0 }, rng).ok).toBe(false);
+    expect(applySwapAction(s, 'p0', { type: 'stackOther', handCard: '6S', targetId: 'p1', pileIndex: 0 }, rng).ok).toBe(false);
+  });
+
+  test('man kan inte byta bort motståndarens kort', () => {
+    // Det finns inget drag för det: swap gäller bara de egna högarna.
+    const s = ok(applySwapAction(two(), 'p0', { type: 'swap', handCard: '6H', pileIndex: 0 }, rng));
+    expect(s.players[1].faceUp[0]).toEqual(['6D']);
+    expect(s.players[0].faceUp[0]).toEqual(['6H']);
+  });
+
+  test('nekas efter Klar och i spelfasen', () => {
+    const ready = ok(applySwapAction(two(), 'p0', { type: 'ready' }, rng));
+    expect(applySwapAction(ready, 'p0', { type: 'stackOther', handCard: '6H', targetId: 'p1', pileIndex: 0 }, rng).ok).toBe(false);
+    const playing = { ...two(), phase: 'play' as const };
+    expect(applySwapAction(playing, 'p0', { type: 'stackOther', handCard: '6H', targetId: 'p1', pileIndex: 0 }, rng).ok).toBe(false);
+  });
+});

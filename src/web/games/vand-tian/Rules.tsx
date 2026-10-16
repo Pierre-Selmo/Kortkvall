@@ -19,6 +19,7 @@ export function Rules() {
         <li>Byter du mot en hög med två eller fler kort tar du upp hela högen till handen.</li>
         <li>Du kan stapla flera kort av samma valör på en uppvänd hög. Då drar du direkt ett nytt kort, så att du har tre på handen igen – och det nya kortet kan också bytas eller staplas.</li>
         <li>Klicka på en staplad hög för att ta tillbaka det översta kortet till handen.</li>
+        <li>Har du samma valör som översta kortet på någon annans uppvända hög får du lägga ditt kort där – markera kortet och klicka på deras hög. Du drar ett nytt kort direkt. Du kan aldrig ta eller byta bort någon annans kort.</li>
         <li>Tryck <strong>Klar</strong> när du är nöjd. Spelet börjar när alla har tryckt Klar.</li>
       </ul>
 
