@@ -1,4 +1,4 @@
-import { canPlayOn, rankOf } from './cards';
+import { canPlayOn, rankOf, type CardId, type Rank } from './cards';
 import type { VTPlayer, VTState } from './state';
 
 /** Var spelaren spelar från just nu. null = spelaren är ute. */
@@ -15,6 +15,17 @@ export function isOut(p: VTPlayer): boolean {
   return sourceOf(p) === null;
 }
 
+/** Fyra lika går alltid att lägga (och vänder högen); annars gäller vanliga regler. */
+export function canPlayCount(r: Rank, count: number, pile: readonly CardId[]): boolean {
+  return count >= 4 || canPlayOn(r, pile);
+}
+
+function hasFourOfAKind(cards: readonly CardId[]): boolean {
+  const counts = new Map<Rank, number>();
+  for (const c of cards) counts.set(rankOf(c), (counts.get(rankOf(c)) ?? 0) + 1);
+  return [...counts.values()].some((n) => n >= 4);
+}
+
 function player(s: VTState, playerId: string): VTPlayer | undefined {
   return s.players.find((p) => p.id === playerId);
 }
@@ -29,9 +40,9 @@ export function hasPlayable(s: VTState, playerId: string): boolean {
   if (!p) return false;
   switch (sourceOf(p)) {
     case 'hand':
-      return p.hand.some((c) => canPlayOn(rankOf(c), s.pile));
+      return p.hand.some((c) => canPlayOn(rankOf(c), s.pile)) || hasFourOfAKind(p.hand);
     case 'faceUp':
-      return p.faceUp.some((f) => f.length > 0 && canPlayOn(rankOf(f[0]), s.pile));
+      return p.faceUp.some((f) => f.length > 0 && canPlayCount(rankOf(f[0]), f.length, s.pile));
     case 'faceDown':
       return true;
     default:

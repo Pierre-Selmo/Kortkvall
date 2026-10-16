@@ -125,3 +125,28 @@ test('turordningen hoppar över spelare som är ute', () => {
   const s = act(testState({ finishOrder: ['p1'], players: [{ hand: ['KS', '4C'] }, {}, other] }), play('KS'));
   expect(s.current).toBe(2);
 });
+
+test('fyra lika går på vad som helst och vänder högen', () => {
+  const s = act(testState({ pile: ['9D', 'KS'], deck: ['6H'], players: [{ hand: ['5S', '5D', '5H', '5C'] }, other] }), play('5S', '5D', '5H', '5C'));
+  expect(s.pile).toEqual([]);
+  expect(s.burnedCount).toBe(6);
+  expect(s.current).toBe(0);
+  expect(s.events).toContainEqual({ type: 'burn', playerId: 'p0' });
+});
+
+test('tre lika på ett högre kort nekas fortfarande', () => {
+  const s = testState({ pile: ['KS'], players: [{ hand: ['5S', '5D', '5H', '5C'] }, other] });
+  expect(applyPlayAction(s, 'p0', play('5S', '5D', '5H'), rng).ok).toBe(false);
+});
+
+test('med fyra lika på handen får man varken chansa eller ta upp högen', () => {
+  const s = testState({ pile: ['KS'], deck: ['3H'], players: [{ hand: ['5S', '5D', '5H', '5C'] }, other] });
+  expect(applyPlayAction(s, 'p0', { type: 'chance' }, rng).ok).toBe(false);
+  expect(applyPlayAction(s, 'p0', { type: 'pickUp' }, rng).ok).toBe(false);
+});
+
+test('en uppvänd hög med fyra lika går på vad som helst och vänder', () => {
+  const s = act(testState({ pile: ['AS'], players: [{ faceUp: [['4S', '4D', '4H', '4C'], [], []], faceDown: ['3S', null, null] }, other] }), { type: 'playFaceUp', pileIndex: 0 });
+  expect(s.pile).toEqual([]);
+  expect(s.current).toBe(0);
+});

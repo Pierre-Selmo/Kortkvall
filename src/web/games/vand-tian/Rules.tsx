@@ -4,7 +4,7 @@ export function Rules() {
       <h2>Vänd tian</h2>
       <div className="summary">
         <strong>Kort sagt:</strong> lägg lika högt eller högre än översta kortet i högen. 2:an går på allt och ger dig en tur till,
-        10:an vänder högen. Bli av med alla dina kort – den som har kort kvar sist förlorar.
+        10:an och fyra lika vänder högen. Bli av med alla dina kort – den som har kort kvar sist förlorar.
       </div>
 
       <h3>Utdelning</h3>
@@ -35,6 +35,7 @@ export function Rules() {
         <li><strong>2:an</strong> går på vad som helst. Lägger du en 2:a lägger du igen, och då får du lägga vad som helst.</li>
         <li><strong>10:an</strong> går på vad som helst och vänder högen – den tas ur spelet och du lägger igen.</li>
         <li><strong>Fyra lika</strong> överst i högen vänder också högen, och du lägger igen.</li>
+        <li>Har du <strong>fyra lika</strong> får du lägga dem på vad som helst – även fyra 5:or på en kung. De vänder högen precis som en 10:a.</li>
         <li>Efter ditt drag drar du kort tills du har tre på handen, så länge dragbunten räcker.</li>
       </ul>
 

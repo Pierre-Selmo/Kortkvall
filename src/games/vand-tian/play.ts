@@ -1,7 +1,7 @@
 import type { Rng } from '../../shared/rng';
 import type { ActionResult, GameResult } from '../types';
 import { canPlayOn, rankOf, type CardId, type Rank } from './cards';
-import { canChance, canPickUp, isOut, sourceOf } from './legal';
+import { canChance, canPickUp, canPlayCount, isOut, sourceOf } from './legal';
 import { refill } from './setup';
 import type { VTAction, VTState } from './state';
 
@@ -81,7 +81,7 @@ export function applyPlayAction(state: VTState, playerId: string, a: VTAction, _
       if (!cards.every((c) => p.hand.includes(c))) return fail('Du har inte det kortet');
       const rank = rankOf(cards[0]);
       if (!cards.every((c) => rankOf(c) === rank)) return fail('Alla kort måste ha samma valör');
-      if (!canPlayOn(rank, s.pile)) return fail(tooLow(s.pile));
+      if (!canPlayCount(rank, cards.length, s.pile)) return fail(tooLow(s.pile));
       p.hand = p.hand.filter((c) => !cards.includes(c));
       s.pile.push(...cards);
       afterPlay(s, idx);
@@ -91,7 +91,7 @@ export function applyPlayAction(state: VTState, playerId: string, a: VTAction, _
       if (src !== 'faceUp') return fail(src === 'hand' ? 'Spela från handen först' : 'Ogiltigt drag');
       const pile = p.faceUp[a.pileIndex];
       if (!pile || pile.length === 0) return fail('Den högen är tom');
-      if (!canPlayOn(rankOf(pile[0]), s.pile)) return fail(tooLow(s.pile));
+      if (!canPlayCount(rankOf(pile[0]), pile.length, s.pile)) return fail(tooLow(s.pile));
       s.pile.push(...pile);
       p.faceUp[a.pileIndex] = [];
       afterPlay(s, idx);

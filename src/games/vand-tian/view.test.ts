@@ -4,6 +4,7 @@ import { canPlayOn, isSpecial, rankOf, value, type CardId } from './cards';
 import { vandTian } from './index';
 import type { VTAction, VTState } from './state';
 import { testState } from './testing';
+import { canPlayCount } from './legal';
 import { viewFor } from './view';
 
 const rng = seededRng(1);
@@ -61,11 +62,13 @@ function firstLegal(s: VTState, pick: () => number = () => 0.99): { who: string;
       // Variera antalet lite, annars kan robotarna gå i cirkel för evigt.
       return { who, a: { type: 'play', cards: same.slice(0, 1 + Math.floor(pick() * same.length)) } };
     }
+    const four = v.myHand.find((c) => v.myHand.filter((d) => rankOf(d) === rankOf(c)).length >= 4);
+    if (four) return { who, a: { type: 'play', cards: v.myHand.filter((c) => rankOf(c) === rankOf(four)) } };
     return { who, a: { type: 'pickUp' } };
   }
   const me = v.players.find((p) => p.id === who)!;
   if (v.mySource === 'faceUp') {
-    const i = me.faceUp.findIndex((f) => f.length > 0 && canPlayOn(rankOf(f[0]), s.pile));
+    const i = me.faceUp.findIndex((f) => f.length > 0 && canPlayCount(rankOf(f[0]), f.length, s.pile));
     return { who, a: i >= 0 ? { type: 'playFaceUp', pileIndex: i } : { type: 'pickUp' } };
   }
   return { who, a: { type: 'playFaceDown', index: me.faceDown.indexOf(true) } };

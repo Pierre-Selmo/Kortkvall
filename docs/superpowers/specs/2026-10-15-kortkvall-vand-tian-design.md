@@ -107,7 +107,7 @@ En webbsida där man och ens vänner kan spela kort- och brädspel mot varandra,
 5. **Lägga från handen:** man lägger ett eller flera kort av **samma valör** som är lika höga eller högre än det översta kortet i högen. Man väljer själv hur många av valören man lägger. På en tom hög får man lägga vad som helst.
 6. **2:an** får läggas på vad som helst. Den som lägger en 2:a lägger igen och får då lägga vad som helst (påfyllning sker först, som efter en vändning).
 7. **10:an** får läggas på vad som helst och **vänder högen**: högen, inklusive 10:an, tas ur spelet. Samma spelare lägger sedan igen på den tomma högen.
-8. **Fyra lika:** om de fyra översta korten i högen har samma valör vänds högen, oavsett om de lades av en eller flera spelare och i ett eller flera drag. Samma spelare lägger sedan igen.
+8. **Fyra lika:** om de fyra översta korten i högen har samma valör vänds högen, oavsett om de lades av en eller flera spelare och i ett eller flera drag. Samma spelare lägger sedan igen. Fyra lika som läggs i ett drag (från handen eller som en staplad uppvänd hög) får läggas på vad som helst och vänder högen, precis som en 10:a.
 9. **Påfyllning:** efter sitt drag fyller man på handen till 3 kort från dragbunten, så länge den räcker. Detta sker även innan man lägger igen efter att ha vänt högen.
 10. **Kan inte lägga:**
     - Om dragbunten **inte är tom** får man välja mellan att **chansa** och att ta upp högen. Att chansa betyder att man drar översta kortet från dragbunten. Går det att lägga, läggs det automatiskt, och reglerna 6–9 gäller som vanligt. Går det inte att lägga tar man upp hela högen **plus** det dragna kortet.
