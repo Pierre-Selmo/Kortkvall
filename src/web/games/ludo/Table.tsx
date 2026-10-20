@@ -5,7 +5,7 @@ import type { LudoView } from '../../../games/ludo/view';
 import { RulesModal } from '../../components/RulesModal';
 import type { TableProps } from '../registry';
 import { ordinal } from '../vand-tian/Table';
-import { CELL, COLORS, HOME, NEST_ORIGIN, SAFE_CELLS, SIZE, TINTS, TRACK, pieceCell, starPoints } from './board';
+import { CELL, COLORS, HOME, NEST_ORIGIN, SAFE_CELLS, SIZE, TRACK, arrowPoints, pieceCell, starPoints } from './board';
 import { Rules } from './Rules';
 
 const genitive = (name: string) => (/[sxz]$/i.test(name) ? name : `${name}s`);
@@ -86,6 +86,14 @@ export function Table({ room, send, isHost, onLeave }: TableProps) {
               x={c * CELL + 1} y={r * CELL + 1} width={CELL - 2} height={CELL - 2}
               fill={START.includes(i) ? COLORS[START.indexOf(i)] : '#ffffff'}
               stroke="#333333" strokeWidth={1.5}
+            />
+          ))}
+          {/* Startpilar: pekar in på banan från varje färgs startruta */}
+          {START.map((s, c) => (
+            <polygon
+              key={`a${c}`}
+              points={arrowPoints(TRACK[s], TRACK[(s + 1) % 52])}
+              fill="#ffffff" stroke="#333333" strokeWidth={1.5} strokeLinejoin="round"
             />
           ))}
           {/* Trygga stjärnor */}

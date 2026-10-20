@@ -39,7 +39,7 @@ export const CENTER: [number, number] = [7, 7];
 export function pieceCell(color: number, progress: number, nestSlot: number): [number, number] {
   if (progress === -1) {
     const [c0, r0] = NEST_ORIGIN[color];
-    return [c0 + 2 + (nestSlot % 2) * 2, r0 + 2 + Math.floor(nestSlot / 2) * 2];
+    return [c0 + 1.5 + (nestSlot % 2) * 2, r0 + 1.5 + Math.floor(nestSlot / 2) * 2];
   }
   if (progress <= 50) return TRACK[(START[color] + progress) % 52];
   if (progress <= 55) return HOME[color][progress - 51];
@@ -53,4 +53,23 @@ export function starPoints(cx: number, cy: number, outer: number, inner: number)
     const a = -Math.PI / 2 + (k * Math.PI) / 5;
     return `${(cx + rad * Math.cos(a)).toFixed(1)},${(cy + rad * Math.sin(a)).toFixed(1)}`;
   }).join(' ');
+}
+
+/** En pil som pekar från en ruta mot nästa, för att markera startrutan. */
+export function arrowPoints(from: [number, number], to: [number, number]): string {
+  const cx = from[0] * CELL + CELL / 2;
+  const cy = from[1] * CELL + CELL / 2;
+  const dx = to[0] - from[0];
+  const dy = to[1] - from[1];
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len;
+  const uy = dy / len;
+  const px = -uy;
+  const py = ux;
+  const pts = [
+    [cx + ux * 13, cy + uy * 13],
+    [cx - ux * 7 + px * 9, cy - uy * 7 + py * 9],
+    [cx - ux * 7 - px * 9, cy - uy * 7 - py * 9],
+  ];
+  return pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
 }
