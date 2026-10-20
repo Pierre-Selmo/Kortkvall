@@ -28,6 +28,9 @@ export function Rules() {
         <li>Klicka på talongen för att dra ett kort. När talongen är tom kan du lägga tillbaka skräphögen.</li>
       </ul>
 
+      <h3>Ångra</h3>
+      <p>Knappen Ångra tar tillbaka det senaste draget, till exempel en flytt eller att du drog ett kort från talongen. Du kan ångra upp till 100 drag.</p>
+
       <h3>Slut</h3>
       <p>Du vinner när alla fyra basrutor är klara. Finns det inga drag kvar är spelet fast.</p>
     </>

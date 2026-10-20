@@ -11,18 +11,28 @@ import { navigate } from '../nav';
 
 const KEY = 'kortkvall:solitaire';
 const PLAYER = 'me';
+/** Hur många drag man kan ångra. */
+const MAX_UNDO = 100;
 
-function newGame(): SolState {
-  return setup([PLAYER], cryptoRng);
+interface Saved {
+  state: SolState;
+  history: SolState[];
+}
+
+function newGame(): Saved {
+  return { state: setup([PLAYER], cryptoRng), history: [] };
 }
 
 /** Sparat spel i webbläsaren, om det finns och ser ut som ett Klondike-spel. Annars nytt. */
-function loadGame(): SolState {
+function loadGame(): Saved {
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) {
-      const s = JSON.parse(raw) as SolState;
-      if (Array.isArray(s.tableau) && Array.isArray(s.stock)) return s;
+      const parsed = JSON.parse(raw) as Partial<Saved> & Partial<SolState>;
+      const state = parsed.state ?? (parsed.tableau ? (parsed as SolState) : undefined);
+      if (state && Array.isArray(state.tableau) && Array.isArray(state.stock)) {
+        return { state, history: Array.isArray(parsed.history) ? parsed.history : [] };
+      }
     }
   } catch {
     // ingen åtkomst till lagringen – börja med ett nytt spel
@@ -30,7 +40,7 @@ function loadGame(): SolState {
   return newGame();
 }
 
-function saveGame(s: SolState): void {
+function saveGame(s: Saved): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(s));
   } catch {
@@ -39,11 +49,12 @@ function saveGame(s: SolState): void {
 }
 
 export function SolitairePage() {
-  const [state, setState] = useState<SolState>(loadGame);
+  const [saved, setSaved] = useState<Saved>(loadGame);
   const [error, setError] = useState<string | null>(null);
   const [rules, setRules] = useState(false);
+  const { state, history } = saved;
 
-  useEffect(() => saveGame(state), [state]);
+  useEffect(() => saveGame(saved), [saved]);
 
   useEffect(() => {
     if (!error) return;
@@ -58,12 +69,21 @@ export function SolitairePage() {
       return;
     }
     setError(null);
-    setState(r.state);
+    setSaved({
+      state: r.state,
+      history: [...history, state].slice(-MAX_UNDO),
+    });
+  };
+
+  const undo = () => {
+    if (history.length === 0) return;
+    setError(null);
+    setSaved({ state: history[history.length - 1], history: history.slice(0, -1) });
   };
 
   const reset = () => {
     if (state.phase === 'play' && !window.confirm('Vill du starta om spelet? Det här spelet försvinner.')) return;
-    setState(newGame());
+    setSaved(newGame());
     setError(null);
   };
 
@@ -73,6 +93,7 @@ export function SolitairePage() {
         <button className="btn secondary small" onClick={() => navigate('/')}>← Startsidan</button>
         <span className="title">Solitaire</span>
         <button className="btn secondary small" onClick={() => setRules(true)}>Regler</button>
+        <button className="btn secondary small" onClick={undo} disabled={history.length === 0} title="Ta tillbaka det senaste draget">Ångra</button>
         <button className="btn small" onClick={reset}>Starta om</button>
       </header>
 
