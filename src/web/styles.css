@@ -615,3 +615,10 @@ button.ludo-chip.target { cursor: pointer; box-shadow: 0 0 0 3px var(--gold); }
   .sol-tableau { gap: 4px; }
   .sol-top { gap: 6px; }
 }
+
+/* Solitaire på dator: extra stora kort */
+@media (min-width: 1024px) {
+  .sol-wrap .card.lg { --w: 100px; }
+  .sol-top { gap: 12px; }
+  .sol-tableau { gap: 10px; }
+}

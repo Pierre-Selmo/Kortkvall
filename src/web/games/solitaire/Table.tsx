@@ -28,7 +28,7 @@ export function Table({ room, send, isHost }: TableProps) {
   const [rules, setRules] = useState(false);
 
   const size: 'md' | 'lg' = big ? 'lg' : 'md';
-  const cardW = big ? 76 : 44;
+  const cardW = big ? 100 : 44;
   const cardH = Math.round(cardW * 1.42);
   const downStep = Math.round(cardH * 0.12);
   const upStep = Math.round(cardH * 0.3);
