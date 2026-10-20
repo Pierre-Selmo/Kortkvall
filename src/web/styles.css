@@ -608,3 +608,10 @@ button.ludo-chip.target { cursor: pointer; box-shadow: 0 0 0 3px var(--gold); }
 .sol-col { position: relative; }
 .sol-card { position: absolute; left: 0; }
 .card.in-sel { box-shadow: 0 0 0 2px var(--gold); }
+
+/* Solitaire på mobil: kolumnerna ryms på 360–375 px */
+@media (max-width: 1023px) {
+  .sol-wrap .card.md { --w: 44px; }
+  .sol-tableau { gap: 4px; }
+  .sol-top { gap: 6px; }
+}
