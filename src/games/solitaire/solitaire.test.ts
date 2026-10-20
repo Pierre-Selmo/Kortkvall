@@ -136,3 +136,17 @@ test('vyn visar talongens antal och bara det översta kortet i skräphögen', ()
   expect(v.wasteTop).toBe('9D');
   expect(solitaire.applyAction(st({ stock: ['2H'] }), 'p0', { type: 'draw' }, rng).ok).toBe(true);
 });
+
+import { autoTarget } from './rules';
+
+test('auto: ett svart ess går till basrutan, en svart 4 går på en röd 5', () => {
+  const b = { tableau: [{ down: [], up: ['5H'] }, ...emptyColumns(6)], foundations: { S: [], H: [], D: [], C: [] }, waste: ['4S'] };
+  expect(autoTarget(b, { kind: 'waste' })).toEqual({ kind: 'tableau', col: 0 });
+  expect(autoTarget({ ...b, waste: ['AS'] }, { kind: 'waste' })).toEqual({ kind: 'foundation', suit: 'S' });
+  expect(autoTarget({ ...b, waste: ['9S'] }, { kind: 'waste' })).toBeNull();
+});
+
+test('auto: en kung går inte till en tom kolumn från en annan kolumn', () => {
+  const b = { tableau: [{ down: [], up: ['KS'] }, ...emptyColumns(6)], foundations: { S: [], H: [], D: [], C: [] }, waste: [] };
+  expect(autoTarget(b, { kind: 'tableau', col: 0, count: 1 })).toBeNull();
+});

@@ -29,8 +29,11 @@ export function isSequence(cards: readonly CardId[]): boolean {
   return true;
 }
 
+/** Den del av bordet som reglerna behöver. */
+export type BoardView = Pick<SolState, 'tableau' | 'foundations' | 'waste'>;
+
 /** Korten som tas från källan, utan att något ändras. null om källan inte går att använda. */
-export function peek(s: SolState, from: Source): CardId[] | null {
+export function peek(s: BoardView, from: Source): CardId[] | null {
   switch (from.kind) {
     case 'waste': {
       const top = s.waste.at(-1);
@@ -50,7 +53,7 @@ export function peek(s: SolState, from: Source): CardId[] | null {
 }
 
 /** Kontrollerar att korten får läggas på målet. Muterar inget. */
-export function canPlace(s: SolState, cards: readonly CardId[], to: Target): boolean {
+export function canPlace(s: BoardView, cards: readonly CardId[], to: Target): boolean {
   if (to.kind === 'tableau') {
     const col = s.tableau[to.col];
     if (!col) return false;
@@ -80,4 +83,25 @@ export function hasMove(s: SolState): boolean {
     }
   }
   return false;
+}
+
+/**
+ * Var ska kortet(en) från källan automatiskt gå? Först basrutan, annars första passande kolumn.
+ * En kung går inte till en tom kolumn när den redan ligger i en kolumn.
+ */
+export function autoTarget(s: BoardView, from: Source): Target | null {
+  const cards = peek(s, from);
+  if (!cards) return null;
+  if (cards.length === 1 && from.kind !== 'foundation') {
+    const f: Target = { kind: 'foundation', suit: suitOf(cards[0]) };
+    if (canPlace(s, cards, f)) return f;
+  }
+  for (let i = 0; i < s.tableau.length; i++) {
+    if (from.kind === 'tableau' && from.col === i) continue;
+    const top = s.tableau[i].up.at(-1);
+    if (!top && from.kind === 'tableau' && rankOf(cards[0]) === 'K') continue;
+    const t: Target = { kind: 'tableau', col: i };
+    if (canPlace(s, cards, t)) return t;
+  }
+  return null;
 }

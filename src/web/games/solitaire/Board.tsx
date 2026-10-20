@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { autoTarget } from '../../../games/solitaire/rules';
 import type { Source, SolAction, Target } from '../../../games/solitaire/state';
 import type { SolView } from '../../../games/solitaire/view';
 import type { CardId, Suit } from '../../../games/vand-tian/cards';
@@ -59,6 +60,22 @@ export function SolitaireBoard({ view, onAction }: Props) {
 
   const moveTo = (to: Target) => {
     if (sel) act({ type: 'move', from: sel, to });
+  };
+
+  // Bordet som reglerna ser det (kolumnernas dolda kort behövs inte för att flytta).
+  const boardNow = {
+    tableau: view.tableau.map((c) => ({ down: [] as CardId[], up: c.up })),
+    foundations: view.foundations,
+    waste: view.wasteTop ? [view.wasteTop] : [],
+  };
+
+  /** Klick utan markerat kort: flytta direkt dit det går. Returnerar false om det inte går. */
+  const autoMove = (from: Source): boolean => {
+    if (sel) return false;
+    const to = autoTarget(boardNow, from);
+    if (!to) return false;
+    act({ type: 'move', from, to });
+    return true;
   };
 
   // Ett klick direkt efter ett drag ska inte också välja eller flytta något.
@@ -134,7 +151,10 @@ export function SolitaireBoard({ view, onAction }: Props) {
                 card={view.wasteTop}
                 size={size}
                 selected={sel?.kind === 'waste'}
-                onClick={click(() => (sel?.kind === 'waste' ? setSel(null) : setSel({ kind: 'waste' })))}
+                onClick={click(() => {
+                  if (sel?.kind === 'waste') return setSel(null);
+                  if (!autoMove({ kind: 'waste' })) setSel({ kind: 'waste' });
+                })}
               />
             </div>
           ) : (
@@ -200,7 +220,7 @@ export function SolitaireBoard({ view, onAction }: Props) {
                       className={inSel ? 'in-sel' : ''}
                       onClick={click(() => {
                         if (sel) return moveTo({ kind: 'tableau', col: ci });
-                        setSel({ kind: 'tableau', col: ci, count });
+                        if (!autoMove({ kind: 'tableau', col: ci, count })) setSel({ kind: 'tableau', col: ci, count });
                       })}
                     />
                   </div>
