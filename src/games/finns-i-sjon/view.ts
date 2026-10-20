@@ -13,6 +13,8 @@ export interface FishView {
   myHand: CardId[];
   pileCount: number;
   currentPlayerId: string | null;
+  /** Sant när den aktiva spelaren ska välja ett kort i sjön. */
+  awaiting: boolean;
   /** Valörer jag kan fråga efter just nu. Tomt om det inte är min tur. */
   askable: Rank[];
   events: FishEvent[];
@@ -30,6 +32,7 @@ export function viewFor(s: FishState, playerId: string): FishView {
     players: s.players.map((p) => ({ id: p.id, handCount: p.hand.length, books: [...p.books] })),
     myHand: me ? [...me.hand] : [],
     pileCount: s.pile.length,
+    awaiting: s.awaiting !== null,
     currentPlayerId: s.phase === 'finished' ? null : cur.id,
     askable,
     events: structuredClone(s.events),

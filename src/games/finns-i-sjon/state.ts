@@ -15,12 +15,16 @@ export type FishEvent =
 export interface FishState {
   phase: 'play' | 'finished';
   players: FishPlayer[];
-  /** Sjön. Index 0 = översta kortet. */
+  /** Sjön. Ordningen är okänd för spelarna. Den som väljer tar ett kort ur den. */
   pile: CardId[];
   current: number;
+  /** Satt efter ett miss: den aktiva spelaren ska välja ett kort i sjön. */
+  awaiting: { rank: Rank } | null;
   events: FishEvent[];
 }
 
-export type FishAction = { type: 'ask'; targetId: string; rank: Rank };
+export type FishAction =
+  | { type: 'ask'; targetId: string; rank: Rank }
+  | { type: 'pick'; index: number };
 
 export const BOOKS_TOTAL = 13;

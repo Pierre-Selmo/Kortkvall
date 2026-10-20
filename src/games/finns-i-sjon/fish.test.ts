@@ -19,6 +19,7 @@ function st(hands: CardId[][], pile: CardId[] = [], over: Partial<FishState> = {
     players: hands.map((hand, i) => ({ id: 'p' + i, hand: [...hand], books: [] })),
     pile: [...pile],
     current: 0,
+    awaiting: null,
     events: [],
     ...over,
   };
@@ -49,19 +50,37 @@ test('träff: motspelarens kort av valören byter ägare och turen stannar', () 
   expect(s.events).toContainEqual({ type: 'ask', playerId: 'p0', targetId: 'p1', rank: 'K', hits: 2 });
 });
 
-test('miss med annan valör: kortet dras och turen går vidare', () => {
-  const s = ok(ask(st([['KH', '4C'], ['9H']], ['2D', '5S']), 'p0', 'p1', 'K'));
-  expect(s.players[0].hand).toContain('2D');
-  expect(s.pile).toEqual(['5S']);
+test("miss: man väljer ett kort i sjön och turen går vidare", () => {
+  let s = ok(ask(st([["KH", "4C"], ["9H"]], ["2D", "5S"]), "p0", "p1", "K"));
+  expect(s.awaiting).toEqual({ rank: "K" });
+  expect(s.pile).toEqual(["2D", "5S"]);
+  s = ok(applyFishAction(s, "p0", { type: "pick", index: 1 }, rng));
+  expect(s.players[0].hand).toContain("5S");
+  expect(s.pile).toEqual(["2D"]);
+  expect(s.awaiting).toBeNull();
   expect(s.current).toBe(1);
-  expect(s.events).toContainEqual({ type: 'fish', playerId: 'p0', shown: null });
+  expect(s.events).toContainEqual({ type: "fish", playerId: "p0", shown: null });
 });
 
-test('miss med samma valör som frågan: kortet visas och turen stannar', () => {
-  const s = ok(ask(st([['KH', '4C'], ['9H']], ['KC', '5S']), 'p0', 'p1', 'K'));
-  expect(s.players[0].hand).toContain('KC');
+test("miss med samma valör som frågan: det valda kortet visas och turen stannar", () => {
+  let s = ok(ask(st([["KH", "4C"], ["9H"]], ["5S", "KC"]), "p0", "p1", "K"));
+  s = ok(applyFishAction(s, "p0", { type: "pick", index: 1 }, rng));
+  expect(s.players[0].hand).toContain("KC");
   expect(s.current).toBe(0);
-  expect(s.events).toContainEqual({ type: 'fish', playerId: 'p0', shown: 'KC' });
+  expect(s.events).toContainEqual({ type: "fish", playerId: "p0", shown: "KC" });
+});
+
+test("efter ett miss går det inte att fråga igen, och valet måste vara ett kort i sjön", () => {
+  const s = ok(ask(st([["KH", "4C"], ["9H"]], ["2D", "5S"]), "p0", "p1", "K"));
+  expect(ask(s, "p0", "p1", "K").ok).toBe(false);
+  expect(applyFishAction(s, "p0", { type: "pick", index: 5 }, rng).ok).toBe(false);
+  expect(applyFishAction(s, "p0", { type: "pick", index: -1 }, rng).ok).toBe(false);
+});
+
+test("tom sjö vid miss: inget val och turen går vidare", () => {
+  const s = ok(ask(st([["KH", "4C"], ["9H"]], []), "p0", "p1", "K"));
+  expect(s.awaiting).toBeNull();
+  expect(s.current).toBe(1);
 });
 
 test('att fråga utan egen valör nekas', () => {
@@ -130,7 +149,9 @@ test.each([2, 3, 4, 5].flatMap((n) => [1, 2, 3, 4, 5].map((seed) => [n, seed])))
       const rank = ranks[Math.floor(r() * ranks.length)];
       const others = s.players.filter((p) => p.id !== me.id);
       const target = others[Math.floor(r() * others.length)];
-      const res = applyFishAction(s, me.id, { type: 'ask', targetId: target.id, rank }, r);
+      const res = s.awaiting
+        ? applyFishAction(s, me.id, { type: "pick", index: Math.floor(r() * s.pile.length) }, r)
+        : applyFishAction(s, me.id, { type: "ask", targetId: target.id, rank }, r);
       if (!res.ok) throw new Error(res.error);
       s = res.state;
     }

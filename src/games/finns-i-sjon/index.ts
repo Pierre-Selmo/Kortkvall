@@ -9,6 +9,7 @@ import { viewFor, type FishView } from './view';
 export function isFishAction(a: unknown): a is FishAction {
   if (typeof a !== 'object' || a === null) return false;
   const o = a as Record<string, unknown>;
+  if (o.type === 'pick') return Number.isInteger(o.index);
   return o.type === 'ask' && typeof o.targetId === 'string' && (RANKS as readonly unknown[]).includes(o.rank);
 }
 

@@ -11,6 +11,7 @@ export function setup(playerIds: string[], rng: Rng): FishState {
     players: playerIds.map((id) => ({ id, hand: deck.splice(0, per), books: [] })),
     pile: deck,
     current: 0,
+    awaiting: null,
     events: [],
   };
   for (const p of s.players) layBooks(s, p);
