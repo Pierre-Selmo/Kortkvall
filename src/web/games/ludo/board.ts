@@ -21,8 +21,8 @@ export const HOME: [number, number][][] = [
 /** Övre vänstra hörnet för boet i varje färg (6×6 rutor). */
 export const NEST_ORIGIN: [number, number][] = [[0, 9], [0, 0], [9, 0], [9, 9]];
 
-/** Trygga stjärnrutor: tre före varje startruta. */
-export const SAFE_CELLS: number[] = START.map((s) => (s + 49) % 52);
+/** Trygga stjärnrutor: fem före varje startruta. */
+export const SAFE_CELLS: number[] = START.map((s) => (s + 47) % 52);
 
 export const COLORS = ['#e53935', '#43a047', '#fdd835', '#1e88e5'];
 /** Ljusa toner för boet. */

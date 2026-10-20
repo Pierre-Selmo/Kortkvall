@@ -16,15 +16,14 @@ test('hemfälten ligger utanför banan', () => {
   for (const lane of HOME) for (const [c, r] of lane) expect(track.has(`${c},${r}`)).toBe(false);
 });
 
-test('startrutorna ligger på armarnas ytterkant, som i bilden', () => {
-  // röd nedåt, grön vänster, gul upp, blå höger
-  expect(TRACK[START[0]]).toEqual([7, 14]);
-  expect(TRACK[START[1]]).toEqual([0, 7]);
-  expect(TRACK[START[2]]).toEqual([7, 0]);
-  expect(TRACK[START[3]]).toEqual([14, 7]);
+test('startrutorna ligger där de ska: röd (6,13), grön (1,6), gul (8,1), blå (13,8)', () => {
+  expect(TRACK[START[0]]).toEqual([6, 13]);
+  expect(TRACK[START[1]]).toEqual([1, 6]);
+  expect(TRACK[START[2]]).toEqual([8, 1]);
+  expect(TRACK[START[3]]).toEqual([13, 8]);
 });
 
-test('de trygga stjärnrutorna ligger tre före varje startruta', () => {
+test('de trygga stjärnrutorna ligger fem före varje startruta, som i bilden', () => {
   expect(SAFE_CELLS.map((i) => TRACK[i])).toEqual([[8, 12], [2, 8], [6, 2], [12, 6]]);
 });
 

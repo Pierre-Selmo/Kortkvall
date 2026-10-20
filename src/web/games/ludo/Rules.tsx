@@ -13,7 +13,7 @@ export function Rules() {
       <p>En 6:a ger ett extra slag, så länge du kan flytta något med den.</p>
 
       <h3>Trygga stjärnor</h3>
-      <p>Pjäser på de vita stjärnorna kan inte knuffas ut. Stjärnan ligger tre rutor före varje startruta.</p>
+      <p>Pjäser på de vita stjärnorna kan inte knuffas ut. Stjärnan ligger fem rutor före varje startruta.</p>
 
       <h3>Knuffa</h3>
       <p>Landar du på en motståndares pjäs på den gemensamma banan skickas den tillbaka till sitt bo. Det går inte att knuffa i hemfältet.</p>

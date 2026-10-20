@@ -150,10 +150,10 @@ test.each([2, 3, 4].flatMap((n) => [1, 2, 3, 4, 5, 6].map((seed) => [n, seed])))
 );
 
 test('en pjäs på en trygg stjärnruta kan inte knuffas ut', () => {
-  // Trygg ruta 42 = tre före grönas startruta 45. Röd (progress 9) landar på 42 där grön står (progress 49).
+  // Trygg ruta 42 = fem före grönas startruta 47. Röd (progress 7) landar på 42 där grön står (progress 47).
   expect(SAFE).toContain(42);
-  expect(trackIndex(1, 49)).toBe(42);
-  const s = ok(apply(st([[9, N, N, N], [49, N, N, N]], { phase: 'move', dice: 1 }), 'p0', { type: 'move', pieceIndex: 0 }));
-  expect(trackIndex(0, 10)).toBe(42);
-  expect(s.players[1].pieces[0]).toBe(49);
+  expect(trackIndex(1, 47)).toBe(42);
+  const s = ok(apply(st([[7, N, N, N], [47, N, N, N]], { phase: 'move', dice: 1 }), 'p0', { type: 'move', pieceIndex: 0 }));
+  expect(trackIndex(0, 8)).toBe(42);
+  expect(s.players[1].pieces[0]).toBe(47);
 });

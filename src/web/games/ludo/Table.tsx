@@ -92,8 +92,8 @@ export function Table({ room, send, isHost, onLeave }: TableProps) {
           {START.map((s, c) => (
             <polygon
               key={`a${c}`}
-              points={arrowPoints(TRACK[s], TRACK[(s + 1) % 52])}
-              fill="#ffffff" stroke="#333333" strokeWidth={1.5} strokeLinejoin="round"
+              points={arrowPoints(TRACK[(s + 50) % 52], HOME[c][0])}
+              fill={COLORS[c]} stroke="#333333" strokeWidth={1.5} strokeLinejoin="round"
             />
           ))}
           {/* Trygga stjärnor */}
