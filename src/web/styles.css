@@ -622,3 +622,9 @@ button.ludo-chip.target { cursor: pointer; box-shadow: 0 0 0 3px var(--gold); }
   .sol-top { gap: 12px; }
   .sol-tableau { gap: 10px; }
 }
+
+/* Solitaire: dra kort */
+.sol-wrap { touch-action: none; user-select: none; }
+.sol-ghost { position: fixed; pointer-events: none; z-index: 200; width: 0; height: 0; }
+.sol-ghost-card { position: absolute; left: 0; }
+.sol-ghost .card { box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45); }
