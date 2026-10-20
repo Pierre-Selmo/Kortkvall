@@ -36,12 +36,11 @@ interface Props {
 }
 
 /**
- * Spelbordet. Dra ett kort (eller en sekvens) dit du vill, eller klicka på ett kort och sedan på målet.
- * Dra med musen eller fingret. Ett kort som bara trycks på väljs.
+ * Spelbordet. Dra ett kort (eller en sekvens) dit du vill. Klickar du på ett kort flyttas det
+ * automatiskt dit det går, och annars händer ingenting.
  */
 export function SolitaireBoard({ view, onAction }: Props) {
   const big = useMedia('(min-width: 1024px)');
-  const [sel, setSel] = useState<Source | null>(null);
   const [ghost, setGhost] = useState<Drag | null>(null);
   const dragRef = useRef<Drag | null>(null);
   const justDragged = useRef(false);
@@ -53,32 +52,22 @@ export function SolitaireBoard({ view, onAction }: Props) {
   const upStep = Math.round(cardH * 0.3);
   const done = view.phase === 'finished';
 
-  const act = (a: SolAction) => {
-    onAction(a);
-    setSel(null);
-  };
-
-  const moveTo = (to: Target) => {
-    if (sel) act({ type: 'move', from: sel, to });
-  };
-
-  // Bordet som reglerna ser det (kolumnernas dolda kort behövs inte för att flytta).
+  // Bordet som reglerna ser det (de dolda korten behövs inte för att flytta).
   const boardNow = {
     tableau: view.tableau.map((c) => ({ down: [] as CardId[], up: c.up })),
     foundations: view.foundations,
     waste: view.wasteTop ? [view.wasteTop] : [],
   };
 
-  /** Klick utan markerat kort: flytta direkt dit det går. Returnerar false om det inte går. */
+  /** Flyttar kortet(en) dit det går. Returnerar false om det inte går någonstans. */
   const autoMove = (from: Source): boolean => {
-    if (sel) return false;
     const to = autoTarget(boardNow, from);
     if (!to) return false;
-    act({ type: 'move', from, to });
+    onAction({ type: 'move', from, to });
     return true;
   };
 
-  // Ett klick direkt efter ett drag ska inte också välja eller flytta något.
+  // Ett klick direkt efter ett drag ska inte också flytta något.
   const click = (fn: () => void) => () => {
     if (!justDragged.current) fn();
   };
@@ -109,7 +98,6 @@ export function SolitaireBoard({ view, onAction }: Props) {
         ? { kind: 'tableau', col: Number(key.slice(1)) }
         : { kind: 'foundation', suit: key.slice(1) as Suit };
       onAction({ type: 'move', from: d.from, to });
-      setSel(null);
     };
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
@@ -124,12 +112,9 @@ export function SolitaireBoard({ view, onAction }: Props) {
     dragRef.current = { from, cards, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, started: false };
   };
 
-  const isSel = (s: Source) => JSON.stringify(sel) === JSON.stringify(s);
-
   const turnText = (() => {
     if (done) return view.won ? 'Du vann! Alla fyra basrutor är klara.' : 'Inga fler drag. Spelet är fast – starta om för att försöka igen.';
-    if (sel) return 'Klicka nu på var kortet ska ligga – en kolumn eller en basruta';
-    return 'Dra ett kort dit du vill, eller klicka på det och sedan på målet';
+    return 'Dra ett kort dit du vill, eller klicka på det så flyttas det dit det går';
   })();
 
   return (
@@ -137,9 +122,9 @@ export function SolitaireBoard({ view, onAction }: Props) {
       <div className="sol-top">
         <div className="sol-stock">
           {view.stockCount > 0 ? (
-            <Card card="back" size={size} onClick={click(() => act({ type: 'draw' }))} title="Dra ett kort" />
+            <Card card="back" size={size} onClick={click(() => onAction({ type: 'draw' }))} title="Dra ett kort" />
           ) : view.wasteCount > 0 ? (
-            <Card card="empty" size={size} onClick={click(() => act({ type: 'draw' }))} title="Lägg tillbaka skräphögen i talongen" />
+            <Card card="empty" size={size} onClick={click(() => onAction({ type: 'draw' }))} title="Lägg tillbaka skräphögen i talongen" />
           ) : (
             <Card card="empty" size={size} />
           )}
@@ -147,15 +132,7 @@ export function SolitaireBoard({ view, onAction }: Props) {
         <div className="sol-waste">
           {view.wasteTop ? (
             <div onPointerDown={(e) => startDrag(e, { kind: 'waste' }, [view.wasteTop!])}>
-              <Card
-                card={view.wasteTop}
-                size={size}
-                selected={sel?.kind === 'waste'}
-                onClick={click(() => {
-                  if (sel?.kind === 'waste') return setSel(null);
-                  if (!autoMove({ kind: 'waste' })) setSel({ kind: 'waste' });
-                })}
-              />
+              <Card card={view.wasteTop} size={size} onClick={click(() => autoMove({ kind: 'waste' }))} />
             </div>
           ) : (
             <Card card="empty" size={size} />
@@ -165,15 +142,10 @@ export function SolitaireBoard({ view, onAction }: Props) {
         {SUITS.map((suit) => {
           const top: CardId | undefined = view.foundations[suit].at(-1);
           return (
-            <div key={suit} className="sol-found" data-drop={`f${suit}`} onClick={click(() => sel && moveTo({ kind: 'foundation', suit }))}>
+            <div key={suit} className="sol-found" data-drop={`f${suit}`}>
               {top ? (
                 <div onPointerDown={(e) => startDrag(e, { kind: 'foundation', suit }, [top])}>
-                  <Card
-                    card={top}
-                    size={size}
-                    selected={sel?.kind === 'foundation' && sel.suit === suit}
-                    onClick={click(() => (sel ? moveTo({ kind: 'foundation', suit }) : setSel({ kind: 'foundation', suit })))}
-                  />
+                  <Card card={top} size={size} onClick={click(() => autoMove({ kind: 'foundation', suit }))} />
                 </div>
               ) : (
                 <Card card="empty" size={size} title={`Basruta ${SUIT_SYMBOL[suit]}`} />
@@ -183,7 +155,7 @@ export function SolitaireBoard({ view, onAction }: Props) {
         })}
       </div>
 
-      <div className={sel ? 'turn-line mine' : 'turn-line'}>{turnText}</div>
+      <div className="turn-line">{turnText}</div>
 
       <div className="sol-tableau">
         {view.tableau.map((col, ci) => {
@@ -194,7 +166,6 @@ export function SolitaireBoard({ view, onAction }: Props) {
               className="sol-col"
               data-drop={`t${ci}`}
               style={{ width: cardW, height: Math.max(height, cardH) }}
-              onClick={click(() => sel && moveTo({ kind: 'tableau', col: ci }))}
             >
               {col.down === 0 && col.up.length === 0 && <Card card="empty" size={size} />}
               {Array.from({ length: col.down }, (_, i) => (
@@ -204,8 +175,6 @@ export function SolitaireBoard({ view, onAction }: Props) {
               ))}
               {col.up.map((c: CardId, i: number) => {
                 const count = col.up.length - i;
-                const inSel = sel?.kind === 'tableau' && sel.col === ci && count <= sel.count;
-                const isTop = sel?.kind === 'tableau' && sel.col === ci && sel.count === count;
                 return (
                   <div
                     key={c}
@@ -216,12 +185,7 @@ export function SolitaireBoard({ view, onAction }: Props) {
                     <Card
                       card={c}
                       size={size}
-                      selected={isTop}
-                      className={inSel ? 'in-sel' : ''}
-                      onClick={click(() => {
-                        if (sel) return moveTo({ kind: 'tableau', col: ci });
-                        if (!autoMove({ kind: 'tableau', col: ci, count })) setSel({ kind: 'tableau', col: ci, count });
-                      })}
+                      onClick={click(() => autoMove({ kind: 'tableau', col: ci, count }))}
                     />
                   </div>
                 );
@@ -240,7 +204,6 @@ export function SolitaireBoard({ view, onAction }: Props) {
           ))}
         </div>
       )}
-      {isSel({ kind: 'waste' }) && <div className="muted">Skräphögen är vald</div>}
     </main>
   );
 }

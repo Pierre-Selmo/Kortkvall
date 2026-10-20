@@ -21,10 +21,10 @@ export function Rules() {
         <li>Lyfter du ett öppet kort och ett dolt kort ligger under, vänds det dolda kortet upp.</li>
       </ul>
 
-      <h3>Så här klickar du</h3>
+      <h3>Så här flyttar du</h3>
       <ul>
-        <li>Klicka på ett kort för att välja det. I en kolumn väljs kortet och allt ovanför det.</li>
-        <li>Klicka sedan på en kolumn eller en basruta där det ska ligga.</li>
+        <li>Dra ett kort eller en sekvens dit du vill, till en kolumn eller en basruta.</li>
+        <li>Klickar du på ett kort flyttas det automatiskt dit det går. Går det inte händer ingenting.</li>
         <li>Klicka på talongen för att dra ett kort. När talongen är tom kan du lägga tillbaka skräphögen.</li>
       </ul>
 
