@@ -4,6 +4,12 @@ export const LAST_TRACK = 50;
 export const GOAL = 56;
 export const PIECES = 4;
 
+/** Startrutan på den gemensamma banan för varje färg: röd, grön, gul, blå. */
+export const START = [32, 45, 6, 19];
+
+/** Trygga stjärnrutor (tre rutor före varje startruta). Där kan ingen knuffas ut. */
+export const SAFE = START.map((s) => (s + 49) % 52);
+
 export type LudoEvent =
   | { type: 'roll'; playerId: string; value: number }
   | { type: 'knock'; playerId: string; victimId: string }

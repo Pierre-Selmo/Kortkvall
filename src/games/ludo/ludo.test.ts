@@ -3,7 +3,7 @@ import { seededRng, type Rng } from '../../shared/rng';
 import { legalPieces } from './legal';
 import { applyLudoAction, ludoResult, trackIndex } from './play';
 import { setup } from './setup';
-import { NEST, type LudoAction, type LudoState } from './state';
+import { NEST, SAFE, type LudoAction, type LudoState } from './state';
 import { ludo } from './index';
 import { viewFor } from './view';
 
@@ -148,3 +148,12 @@ test.each([2, 3, 4].flatMap((n) => [1, 2, 3, 4, 5, 6].map((seed) => [n, seed])))
     expect(new Set(s.finishOrder).size).toBe(n);
   },
 );
+
+test('en pjäs på en trygg stjärnruta kan inte knuffas ut', () => {
+  // Trygg ruta 42 = tre före grönas startruta 45. Röd (progress 9) landar på 42 där grön står (progress 49).
+  expect(SAFE).toContain(42);
+  expect(trackIndex(1, 49)).toBe(42);
+  const s = ok(apply(st([[9, N, N, N], [49, N, N, N]], { phase: 'move', dice: 1 }), 'p0', { type: 'move', pieceIndex: 0 }));
+  expect(trackIndex(0, 10)).toBe(42);
+  expect(s.players[1].pieces[0]).toBe(49);
+});

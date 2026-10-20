@@ -1,13 +1,13 @@
 import type { Rng } from '../../shared/rng';
 import type { ActionResult, GameResult } from '../types';
 import { legalPieces } from './legal';
-import { GOAL, LAST_TRACK, NEST, type LudoAction, type LudoState } from './state';
+import { GOAL, LAST_TRACK, NEST, SAFE, START, type LudoAction, type LudoState } from './state';
 
 const fail = (error: string) => ({ ok: false as const, error });
 
-/** Gemensam bana: färg c startar på ruta 13·c och går 51 rutor medurs. */
+/** Gemensam bana: färgen startar på sin startruta och går 51 rutor medurs. */
 export function trackIndex(color: number, progress: number): number {
-  return (color * 13 + progress) % 52;
+  return (START[color] + progress) % 52;
 }
 
 function nextActive(s: LudoState, from: number): number {
@@ -54,8 +54,8 @@ export function applyLudoAction(state: LudoState, playerId: string, a: LudoActio
       p.pieces[a.pieceIndex] = next;
 
       // Landar man på en motståndares pjäs på banan skickas den tillbaka till boet.
-      if (next <= LAST_TRACK) {
-        const square = trackIndex(idx, next);
+      const square = next <= LAST_TRACK ? trackIndex(idx, next) : -1;
+      if (square >= 0 && !SAFE.includes(square)) {
         s.players.forEach((o, oi) => {
           if (oi === idx) return;
           o.pieces.forEach((oq, j) => {

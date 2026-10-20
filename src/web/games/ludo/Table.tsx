@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import type { LudoEvent } from '../../../games/ludo/state';
+import { START } from '../../../games/ludo/state';
 import type { LudoView } from '../../../games/ludo/view';
 import { RulesModal } from '../../components/RulesModal';
 import type { TableProps } from '../registry';
 import { ordinal } from '../vand-tian/Table';
-import { CELL, COLORS, HOME, NEST_ORIGIN, SIZE, TINTS, TRACK, pieceCell, starPoints } from './board';
+import { CELL, COLORS, HOME, NEST_ORIGIN, SAFE_CELLS, SIZE, TINTS, TRACK, pieceCell, starPoints } from './board';
 import { Rules } from './Rules';
 
 const genitive = (name: string) => (/[sxz]$/i.test(name) ? name : `${name}s`);
@@ -70,33 +71,43 @@ export function Table({ room, send, isHost, onLeave }: TableProps) {
         </div>
 
         <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="ludo-board" role="img" aria-label="Ludobräde">
-          <rect width={SIZE} height={SIZE} rx={14} fill="#f5efd9" />
+          <rect width={SIZE} height={SIZE} rx={14} fill="#ffffff" />
+          {/* Boet: färgad kvadrat med vit ruta där pjäserna står */}
           {COLORS.map((col, c) => (
-            <rect
-              key={`nest${c}`}
-              x={NEST_ORIGIN[c][0] * CELL} y={NEST_ORIGIN[c][1] * CELL}
-              width={6 * CELL} height={6 * CELL} rx={10} fill={TINTS[c]} stroke={col} strokeWidth={2} strokeOpacity={0.5}
-            />
+            <g key={`nest${c}`}>
+              <rect x={NEST_ORIGIN[c][0] * CELL} y={NEST_ORIGIN[c][1] * CELL} width={6 * CELL} height={6 * CELL} fill={col} />
+              <rect x={(NEST_ORIGIN[c][0] + 1) * CELL} y={(NEST_ORIGIN[c][1] + 1) * CELL} width={4 * CELL} height={4 * CELL} rx={8} fill="#ffffff" />
+            </g>
           ))}
+          {/* Banan */}
           {TRACK.map(([c, r], i) => (
             <rect
               key={`t${i}`}
-              x={c * CELL + 1} y={r * CELL + 1} width={CELL - 2} height={CELL - 2} rx={5}
-              fill="#ffffff" stroke="#b9ad86" strokeWidth={1}
+              x={c * CELL + 1} y={r * CELL + 1} width={CELL - 2} height={CELL - 2}
+              fill={START.includes(i) ? COLORS[START.indexOf(i)] : '#ffffff'}
+              stroke="#333333" strokeWidth={1.5}
             />
           ))}
-          {TRACK.map(([c, r], i) => i % 13 === 0 && (
-            <polygon
-              key={`s${i}`}
-              points={starPoints(c * CELL + CELL / 2, r * CELL + CELL / 2, 17, 7.5)}
-              fill={COLORS[i / 13]} stroke="#3b2f12" strokeWidth={1.5} strokeLinejoin="round"
-            />
-          ))}
+          {/* Trygga stjärnor */}
+          {SAFE_CELLS.map((i) => {
+            const [c, r] = TRACK[i];
+            return (
+              <polygon
+                key={`s${i}`}
+                points={starPoints(c * CELL + CELL / 2, r * CELL + CELL / 2, 15, 6)}
+                fill="#ffffff" stroke="#333333" strokeWidth={1.5} strokeLinejoin="round"
+              />
+            );
+          })}
+          {/* Hemfälten */}
           {HOME.map((lane, c) => lane.map(([c2, r2], k) => (
-            <rect key={`h${c}-${k}`} x={c2 * CELL + 1} y={r2 * CELL + 1} width={CELL - 2} height={CELL - 2} rx={5} fill={COLORS[c]} />
+            <rect key={`h${c}-${k}`} x={c2 * CELL + 1} y={r2 * CELL + 1} width={CELL - 2} height={CELL - 2} fill={COLORS[c]} stroke="#333333" strokeWidth={1.5} />
           )))}
-          <rect x={6 * CELL} y={6 * CELL} width={3 * CELL} height={3 * CELL} fill="#3b3b3b" rx={6} />
-          <text x={7.5 * CELL} y={7.5 * CELL + 6} textAnchor="middle" fontSize={22} fill="#ffd54f" fontWeight={700}>MÅL</text>
+          {/* Mittenrutan i fyra färgade trianglar */}
+          <polygon points={`${6 * CELL},${6 * CELL} ${9 * CELL},${6 * CELL} ${7.5 * CELL},${7.5 * CELL}`} fill={COLORS[2]} stroke="#333333" strokeWidth={1.5} />
+          <polygon points={`${9 * CELL},${6 * CELL} ${9 * CELL},${9 * CELL} ${7.5 * CELL},${7.5 * CELL}`} fill={COLORS[3]} stroke="#333333" strokeWidth={1.5} />
+          <polygon points={`${9 * CELL},${9 * CELL} ${6 * CELL},${9 * CELL} ${7.5 * CELL},${7.5 * CELL}`} fill={COLORS[0]} stroke="#333333" strokeWidth={1.5} />
+          <polygon points={`${6 * CELL},${9 * CELL} ${6 * CELL},${6 * CELL} ${7.5 * CELL},${7.5 * CELL}`} fill={COLORS[1]} stroke="#333333" strokeWidth={1.5} />
           {pieces.map((p) => (
             <circle
               key={`p${p.color}-${p.j}`}
