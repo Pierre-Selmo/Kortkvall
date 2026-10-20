@@ -1,5 +1,7 @@
 import type { FC } from 'react';
 import type { ClientMsg, RoomSnapshot } from '../../shared/protocol';
+import { Rules as LudoRules } from './ludo/Rules';
+import { Table as LudoTable } from './ludo/Table';
 import { Rules as VTRules } from './vand-tian/Rules';
 import { Table as VTTable } from './vand-tian/Table';
 
@@ -21,10 +23,10 @@ export interface WebGame {
 
 export const webGames: WebGame[] = [
   { id: 'vand-tian', name: 'Vänd tian', players: '2–5 spelare', icon: '🃏', Table: VTTable, Rules: VTRules },
+  { id: 'ludo', name: 'Ludo', players: '2–4 spelare', icon: '🎲', Table: LudoTable, Rules: LudoRules },
 ];
 
 export const comingSoon: { name: string; icon: string }[] = [
-  { name: 'Ludo', icon: '🎲' },
   { name: 'Finns i sjön', icon: '🐟' },
 ];
 
