@@ -19,8 +19,19 @@ export const HOME: [number, number][][] = [
 /** Övre vänstra hörnet för boet i varje färg (6×6 rutor). */
 export const NEST_ORIGIN: [number, number][] = [[0, 9], [0, 0], [9, 0], [9, 9]];
 
-export const COLORS = ['#d32f2f', '#2e7d32', '#f9a825', '#1565c0'];
+export const COLORS = ['#e53935', '#43a047', '#fdd835', '#1e88e5'];
+/** Ljusa toner för boet. */
+export const TINTS = ['#f8d7d5', '#d6eed5', '#fff3b8', '#d3e5f8'];
 export const COLOR_NAMES = ['röd', 'grön', 'gul', 'blå'];
+
+/** Punkterna för en femuddig stjärna (SVG polygon). */
+export function starPoints(cx: number, cy: number, outer: number, inner: number): string {
+  return Array.from({ length: 10 }, (_, k) => {
+    const rad = k % 2 === 0 ? outer : inner;
+    const a = -Math.PI / 2 + (k * Math.PI) / 5;
+    return `${(cx + rad * Math.cos(a)).toFixed(1)},${(cy + rad * Math.sin(a)).toFixed(1)}`;
+  }).join(' ');
+}
 
 export const CELL = 40;
 export const SIZE = 15 * CELL;

@@ -4,7 +4,7 @@ import type { LudoView } from '../../../games/ludo/view';
 import { RulesModal } from '../../components/RulesModal';
 import type { TableProps } from '../registry';
 import { ordinal } from '../vand-tian/Table';
-import { CELL, COLORS, HOME, NEST_ORIGIN, SIZE, TRACK, pieceCell } from './board';
+import { CELL, COLORS, HOME, NEST_ORIGIN, SIZE, TINTS, TRACK, pieceCell, starPoints } from './board';
 import { Rules } from './Rules';
 
 const genitive = (name: string) => (/[sxz]$/i.test(name) ? name : `${name}s`);
@@ -75,18 +75,25 @@ export function Table({ room, send, isHost, onLeave }: TableProps) {
             <rect
               key={`nest${c}`}
               x={NEST_ORIGIN[c][0] * CELL} y={NEST_ORIGIN[c][1] * CELL}
-              width={6 * CELL} height={6 * CELL} fill={col} opacity={0.22}
+              width={6 * CELL} height={6 * CELL} rx={10} fill={TINTS[c]} stroke={col} strokeWidth={2} strokeOpacity={0.5}
             />
           ))}
           {TRACK.map(([c, r], i) => (
             <rect
               key={`t${i}`}
               x={c * CELL + 1} y={r * CELL + 1} width={CELL - 2} height={CELL - 2} rx={5}
-              fill={i % 13 === 0 ? COLORS[i / 13] : '#ffffff'} stroke="#8a7f5c" strokeWidth={1}
+              fill="#ffffff" stroke="#b9ad86" strokeWidth={1}
+            />
+          ))}
+          {TRACK.map(([c, r], i) => i % 13 === 0 && (
+            <polygon
+              key={`s${i}`}
+              points={starPoints(c * CELL + CELL / 2, r * CELL + CELL / 2, 17, 7.5)}
+              fill={COLORS[i / 13]} stroke="#3b2f12" strokeWidth={1.5} strokeLinejoin="round"
             />
           ))}
           {HOME.map((lane, c) => lane.map(([c2, r2], k) => (
-            <rect key={`h${c}-${k}`} x={c2 * CELL + 1} y={r2 * CELL + 1} width={CELL - 2} height={CELL - 2} rx={5} fill={COLORS[c]} opacity={0.6} />
+            <rect key={`h${c}-${k}`} x={c2 * CELL + 1} y={r2 * CELL + 1} width={CELL - 2} height={CELL - 2} rx={5} fill={COLORS[c]} />
           )))}
           <rect x={6 * CELL} y={6 * CELL} width={3 * CELL} height={3 * CELL} fill="#3b3b3b" rx={6} />
           <text x={7.5 * CELL} y={7.5 * CELL + 6} textAnchor="middle" fontSize={22} fill="#ffd54f" fontWeight={700}>MÅL</text>
@@ -95,8 +102,8 @@ export function Table({ room, send, isHost, onLeave }: TableProps) {
               key={`p${p.color}-${p.j}`}
               cx={p.x} cy={p.y} r={13}
               fill={COLORS[p.color]}
-              stroke={p.clickable ? '#ffd54f' : '#ffffff'}
-              strokeWidth={p.clickable ? 4 : 2}
+              stroke={p.clickable ? '#ffd54f' : '#263238'}
+              strokeWidth={p.clickable ? 4 : 1.5}
               className={p.clickable ? 'ludo-piece clickable' : 'ludo-piece'}
               onClick={p.clickable ? () => act({ type: 'move', pieceIndex: p.j }) : undefined}
             />
