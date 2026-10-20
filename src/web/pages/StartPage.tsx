@@ -1,13 +1,16 @@
 import { useState, type FormEvent } from 'react';
 import { normalizeCode } from '../../worker/codes';
 import { createRoom, load, NAME_KEY, store } from '../api';
+import { Rules as SolRules } from '../games/solitaire/Rules';
 import { RulesModal } from '../components/RulesModal';
 import { comingSoon, webGames, type WebGame } from '../games/registry';
+
 import { navigate } from '../nav';
 import { SITE_NAME } from '../site';
 
 export function StartPage() {
   const [rulesFor, setRulesFor] = useState<WebGame | null>(null);
+  const [solRules, setSolRules] = useState(false);
   const [creating, setCreating] = useState<WebGame | null>(null);
   const [name, setName] = useState(() => load(NAME_KEY) ?? '');
   const [busy, setBusy] = useState(false);
@@ -73,6 +76,15 @@ export function StartPage() {
             )}
           </article>
         ))}
+        <article className="game-tile">
+          <div className="icon" aria-hidden>♠</div>
+          <h2>Solitaire</h2>
+          <div className="muted">1 spelare</div>
+          <div className="row">
+            <button className="btn" onClick={() => navigate('/solitaire')}>Spela</button>
+            <button className="btn secondary small" onClick={() => setSolRules(true)}>Regler</button>
+          </div>
+        </article>
         {comingSoon.map((g) => (
           <article key={g.name} className="game-tile soon" aria-disabled>
             <div className="icon" aria-hidden>{g.icon}</div>
@@ -99,6 +111,7 @@ export function StartPage() {
         {codeError && <div className="error-text">{codeError}</div>}
       </form>
 
+      <RulesModal open={solRules} onClose={() => setSolRules(false)}><SolRules /></RulesModal>
       <RulesModal open={!!rulesFor} onClose={() => setRulesFor(null)}>
         {rulesFor && <rulesFor.Rules />}
       </RulesModal>
