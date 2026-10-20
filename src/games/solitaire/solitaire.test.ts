@@ -150,3 +150,12 @@ test('auto: en kung går inte till en tom kolumn från en annan kolumn', () => {
   const b = { tableau: [{ down: [], up: ['KS'] }, ...emptyColumns(6)], foundations: { S: [], H: [], D: [], C: [] }, waste: [] };
   expect(autoTarget(b, { kind: 'tableau', col: 0, count: 1 })).toBeNull();
 });
+
+import { findHint } from './rules';
+
+test('ledtråd: visar ett flyttbart kort, annars att man ska dra', () => {
+  const b = { tableau: [{ down: [], up: ['5H'] }, ...emptyColumns(6)], foundations: { S: [], H: [], D: [], C: [] }, waste: ['4S'] };
+  expect(findHint(b, 0, 1)).toEqual({ kind: 'move', from: { kind: 'waste' }, to: { kind: 'tableau', col: 0 } });
+  expect(findHint({ ...b, waste: ['9S'] }, 3, 1)).toEqual({ kind: 'draw' });
+  expect(findHint({ ...b, waste: ['9S'] }, 0, 0)).toBeNull();
+});

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { autoTarget } from '../../../games/solitaire/rules';
+import { autoTarget, findHint, type Hint } from '../../../games/solitaire/rules';
 import type { Source, SolAction, Target } from '../../../games/solitaire/state';
 import type { SolView } from '../../../games/solitaire/view';
 import type { CardId, Suit } from '../../../games/vand-tian/cards';
@@ -35,13 +35,29 @@ interface Props {
   onAction(a: SolAction): void;
 }
 
+const sameSource = (a: Source, b: Source | undefined) => !!b && JSON.stringify(a) === JSON.stringify(b);
+
+/** Vad ledtråden säger på svenska. */
+function hintText(h: Hint | 'none'): string {
+  if (h === 'none') return 'Inga självklara drag kvar. Prova att ångra eller starta om.';
+  if (h.kind === 'draw') return 'Dra ett kort från talongen.';
+  const from = h.from.kind === 'waste'
+    ? 'från skräphögen'
+    : h.from.kind === 'foundation'
+      ? `från basrutan ${SUIT_SYMBOL[h.from.suit]}`
+      : h.from.count > 1 ? `de ${h.from.count} korten i kolumn ${h.from.col + 1}` : `kortet i kolumn ${h.from.col + 1}`;
+  const to = h.to.kind === 'foundation' ? `basrutan ${SUIT_SYMBOL[h.to.suit]}` : `kolumn ${h.to.col + 1}`;
+  return `Flytta ${from} till ${to}.`;
+}
+
 /**
  * Spelbordet. Dra ett kort (eller en sekvens) dit du vill. Klickar du på ett kort flyttas det
- * automatiskt dit det går, och annars händer ingenting.
+ * automatiskt dit det går, och annars händer ingenting. Ledtråden visar ett drag som går.
  */
 export function SolitaireBoard({ view, onAction }: Props) {
   const big = useMedia('(min-width: 1024px)');
   const [ghost, setGhost] = useState<Drag | null>(null);
+  const [hint, setHint] = useState<Hint | 'none' | null>(null);
   const dragRef = useRef<Drag | null>(null);
   const justDragged = useRef(false);
 
@@ -58,6 +74,18 @@ export function SolitaireBoard({ view, onAction }: Props) {
     foundations: view.foundations,
     waste: view.wasteTop ? [view.wasteTop] : [],
   };
+
+  // Ledtråden gäller bara för det läge den gavs i.
+  useEffect(() => setHint(null), [view]);
+
+  const giveHint = () => {
+    const h = findHint(boardNow, view.stockCount, view.wasteCount);
+    setHint(h ?? 'none');
+  };
+
+  const shownHint = hint && hint !== 'none' ? hint : null;
+  const hintFrom = shownHint?.kind === 'move' ? shownHint.from : undefined;
+  const hintTo = shownHint?.kind === 'move' ? shownHint.to : undefined;
 
   /** Flyttar kortet(en) dit det går. Returnerar false om det inte går någonstans. */
   const autoMove = (from: Source): boolean => {
@@ -122,7 +150,13 @@ export function SolitaireBoard({ view, onAction }: Props) {
       <div className="sol-top">
         <div className="sol-stock">
           {view.stockCount > 0 ? (
-            <Card card="back" size={size} onClick={click(() => onAction({ type: 'draw' }))} title="Dra ett kort" />
+            <Card
+              card="back"
+              size={size}
+              className={hint && hint !== 'none' && hint.kind === 'draw' ? 'hint' : ''}
+              onClick={click(() => onAction({ type: 'draw' }))}
+              title="Dra ett kort"
+            />
           ) : view.wasteCount > 0 ? (
             <Card card="empty" size={size} onClick={click(() => onAction({ type: 'draw' }))} title="Lägg tillbaka skräphögen i talongen" />
           ) : (
@@ -132,7 +166,12 @@ export function SolitaireBoard({ view, onAction }: Props) {
         <div className="sol-waste">
           {view.wasteTop ? (
             <div onPointerDown={(e) => startDrag(e, { kind: 'waste' }, [view.wasteTop!])}>
-              <Card card={view.wasteTop} size={size} onClick={click(() => autoMove({ kind: 'waste' }))} />
+              <Card
+                card={view.wasteTop}
+                size={size}
+                className={sameSource({ kind: 'waste' }, hintFrom) ? 'hint' : ''}
+                onClick={click(() => autoMove({ kind: 'waste' }))}
+              />
             </div>
           ) : (
             <Card card="empty" size={size} />
@@ -141,11 +180,17 @@ export function SolitaireBoard({ view, onAction }: Props) {
         <div className="sol-spacer" />
         {SUITS.map((suit) => {
           const top: CardId | undefined = view.foundations[suit].at(-1);
+          const isTarget = hintTo?.kind === 'foundation' && hintTo.suit === suit;
           return (
-            <div key={suit} className="sol-found" data-drop={`f${suit}`}>
+            <div key={suit} className={isTarget ? 'sol-found hint-target' : 'sol-found'} data-drop={`f${suit}`}>
               {top ? (
                 <div onPointerDown={(e) => startDrag(e, { kind: 'foundation', suit }, [top])}>
-                  <Card card={top} size={size} onClick={click(() => autoMove({ kind: 'foundation', suit }))} />
+                  <Card
+                    card={top}
+                    size={size}
+                    className={sameSource({ kind: 'foundation', suit }, hintFrom) ? 'hint' : ''}
+                    onClick={click(() => autoMove({ kind: 'foundation', suit }))}
+                  />
                 </div>
               ) : (
                 <Card card="empty" size={size} title={`Basruta ${SUIT_SYMBOL[suit]}`} />
@@ -157,13 +202,19 @@ export function SolitaireBoard({ view, onAction }: Props) {
 
       <div className="turn-line">{turnText}</div>
 
+      <div className="sol-hint-row">
+        <button className="btn secondary small" onClick={giveHint} disabled={done}>Ledtråd</button>
+        {hint && <span className="sol-hint-text">{hintText(hint === 'none' ? 'none' : hint)}</span>}
+      </div>
+
       <div className="sol-tableau">
         {view.tableau.map((col, ci) => {
           const height = cardH + col.down * downStep + Math.max(0, col.up.length - 1) * upStep;
+          const isTarget = hintTo?.kind === 'tableau' && hintTo.col === ci;
           return (
             <div
               key={ci}
-              className="sol-col"
+              className={isTarget ? 'sol-col hint-target' : 'sol-col'}
               data-drop={`t${ci}`}
               style={{ width: cardW, height: Math.max(height, cardH) }}
             >
@@ -185,6 +236,7 @@ export function SolitaireBoard({ view, onAction }: Props) {
                     <Card
                       card={c}
                       size={size}
+                      className={sameSource({ kind: 'tableau', col: ci, count }, hintFrom) ? 'hint' : ''}
                       onClick={click(() => autoMove({ kind: 'tableau', col: ci, count }))}
                     />
                   </div>

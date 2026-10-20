@@ -628,3 +628,9 @@ button.ludo-chip.target { cursor: pointer; box-shadow: 0 0 0 3px var(--gold); }
 .sol-ghost { position: fixed; pointer-events: none; z-index: 200; width: 0; height: 0; }
 .sol-ghost-card { position: absolute; left: 0; }
 .sol-ghost .card { box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45); }
+
+/* Solitaire: ledtråd */
+.card.hint { box-shadow: 0 0 0 3px #4fc3f7, 0 0 16px rgba(79, 195, 247, 0.8); }
+.sol-col.hint-target, .sol-found.hint-target { outline: 3px dashed #4fc3f7; outline-offset: 4px; border-radius: 10px; }
+.sol-hint-row { display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.sol-hint-text { font-size: 15px; }

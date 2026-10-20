@@ -105,3 +105,23 @@ export function autoTarget(s: BoardView, from: Source): Target | null {
   }
   return null;
 }
+
+export type Hint = { kind: 'move'; from: Source; to: Target } | { kind: 'draw' };
+
+/** Ett drag att föreslå: först ett flyttbart kort, annars att dra från talongen. null om inget finns kvar. */
+export function findHint(s: BoardView, stockCount: number, wasteCount: number): Hint | null {
+  const sources: Source[] = [];
+  if (s.waste.length > 0) sources.push({ kind: 'waste' });
+  s.tableau.forEach((col, i) => {
+    for (let k = 1; k <= col.up.length; k++) sources.push({ kind: 'tableau', col: i, count: k });
+  });
+  for (const suit of ['S', 'H', 'D', 'C'] as const) {
+    if (s.foundations[suit].length > 0) sources.push({ kind: 'foundation', suit });
+  }
+  for (const from of sources) {
+    const to = autoTarget(s, from);
+    if (to) return { kind: 'move', from, to };
+  }
+  if (stockCount > 0 || wasteCount > 0) return { kind: 'draw' };
+  return null;
+}
