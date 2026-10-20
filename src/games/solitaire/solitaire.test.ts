@@ -153,9 +153,21 @@ test('auto: en kung går inte till en tom kolumn från en annan kolumn', () => {
 
 import { findHint } from './rules';
 
-test('ledtråd: visar ett flyttbart kort, annars att man ska dra', () => {
-  const b = { tableau: [{ down: [], up: ['5H'] }, ...emptyColumns(6)], foundations: { S: [], H: [], D: [], C: [] }, waste: ['4S'] };
-  expect(findHint(b, 0, 1)).toEqual({ kind: 'move', from: { kind: 'waste' }, to: { kind: 'tableau', col: 0 } });
-  expect(findHint({ ...b, waste: ['9S'] }, 3, 1)).toEqual({ kind: 'draw' });
-  expect(findHint({ ...b, waste: ['9S'] }, 0, 0)).toBeNull();
+test('ledtråd: går till basrutan först', () => {
+  const b = { tableau: [{ down: [], up: ['5H'] }, ...emptyColumns(6)], foundations: { S: [], H: [], D: [], C: [] }, waste: ['AS'] };
+  expect(findHint(b, 0, [0, 0, 0, 0, 0, 0, 0])).toEqual({ kind: 'move', from: { kind: 'waste' }, to: { kind: 'foundation', suit: 'S' } });
+});
+
+test('ledtråd: föreslår ett drag som vänder upp ett dolt kort', () => {
+  const b = { tableau: [{ down: [], up: ['4C'] }, { down: [], up: ['5H'] }, ...emptyColumns(5)], foundations: { S: [], H: [], D: [], C: [] }, waste: [] };
+  // Col 0 har inget dolt kort, så ingen vändning här: ledtråden ska då inte föreslå ett rent kortbyte.
+  expect(findHint(b, 0, [0, 0, 0, 0, 0, 0, 0])).toBeNull();
+  const c = { tableau: [{ down: ['KD'], up: ['4C'] }, { down: [], up: ['5H'] }, ...emptyColumns(5)], foundations: { S: [], H: [], D: [], C: [] }, waste: [] };
+  expect(findHint(c, 0, [1, 0, 0, 0, 0, 0, 0])).toEqual({ kind: 'move', from: { kind: 'tableau', col: 0, count: 1 }, to: { kind: 'tableau', col: 1 } });
+});
+
+test('ledtråd: drar från talongen när inget framsteg finns', () => {
+  const b = { tableau: [{ down: [], up: ['4C'] }, { down: [], up: ['5H'] }, ...emptyColumns(5)], foundations: { S: [], H: [], D: [], C: [] }, waste: [] };
+  expect(findHint(b, 3, [0, 0, 0, 0, 0, 0, 0])).toEqual({ kind: 'draw' });
+  expect(findHint(b, 0, [0, 0, 0, 0, 0, 0, 0])).toBeNull();
 });

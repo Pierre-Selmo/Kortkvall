@@ -79,7 +79,7 @@ export function SolitaireBoard({ view, onAction }: Props) {
   useEffect(() => setHint(null), [view]);
 
   const giveHint = () => {
-    const h = findHint(boardNow, view.stockCount, view.wasteCount);
+    const h = findHint(boardNow, view.stockCount, view.tableau.map((c) => c.down));
     setHint(h ?? 'none');
   };
 

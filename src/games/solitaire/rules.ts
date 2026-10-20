@@ -108,20 +108,34 @@ export function autoTarget(s: BoardView, from: Source): Target | null {
 
 export type Hint = { kind: 'move'; from: Source; to: Target } | { kind: 'draw' };
 
-/** Ett drag att föreslå: först ett flyttbart kort, annars att dra från talongen. null om inget finns kvar. */
-export function findHint(s: BoardView, stockCount: number, wasteCount: number): Hint | null {
+/**
+ * Ett drag som för spelet framåt. Prioritet:
+ * 1. Till en basruta.
+ * 2. Ett tableau-drag som vänder upp ett dolt kort.
+ * 3. Från skräphögen till en kolumn.
+ * 4. Dra från talongen.
+ * Drag som bara flyttar kort mellan kolumner utan att något vänds föreslås inte, så ledtråden loopar inte.
+ * hidden = antal dolda kort per kolumn.
+ */
+export function findHint(s: BoardView, stockCount: number, hidden: number[]): Hint | null {
   const sources: Source[] = [];
   if (s.waste.length > 0) sources.push({ kind: 'waste' });
   s.tableau.forEach((col, i) => {
     for (let k = 1; k <= col.up.length; k++) sources.push({ kind: 'tableau', col: i, count: k });
   });
-  for (const suit of ['S', 'H', 'D', 'C'] as const) {
-    if (s.foundations[suit].length > 0) sources.push({ kind: 'foundation', suit });
-  }
-  for (const from of sources) {
-    const to = autoTarget(s, from);
-    if (to) return { kind: 'move', from, to };
-  }
-  if (stockCount > 0 || wasteCount > 0) return { kind: 'draw' };
-  return null;
+
+  const pick = (pred: (from: Source, to: Target) => boolean): Hint | null => {
+    for (const from of sources) {
+      const to = autoTarget(s, from);
+      if (to && pred(from, to)) return { kind: 'move', from, to };
+    }
+    return null;
+  };
+
+  return (
+    pick((f, t) => t.kind === 'foundation')
+    ?? pick((f) => f.kind === 'tableau' && f.count === s.tableau[f.col].up.length && hidden[f.col] > 0)
+    ?? pick((f, t) => f.kind === 'waste' && t.kind === 'tableau')
+    ?? (stockCount > 0 ? { kind: 'draw' } : null)
+  );
 }
