@@ -590,3 +590,21 @@ button.ludo-chip.target { cursor: pointer; box-shadow: 0 0 0 3px var(--gold); }
 .fish-pile .card.clickable:hover { box-shadow: 0 0 0 3px var(--gold); }
 .seat.target { cursor: pointer; }
 .seat.target .seat-plate { box-shadow: 0 0 0 3px var(--gold); }
+
+/* ---------- Solitaire ---------- */
+
+.sol-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 8px 28px;
+}
+.sol-top { display: flex; gap: 8px; align-items: flex-start; width: min(100%, 720px); }
+.sol-spacer { flex: 1; }
+.sol-found { cursor: pointer; }
+.sol-tableau { display: flex; gap: 6px; justify-content: center; align-items: flex-start; }
+.sol-col { position: relative; }
+.sol-card { position: absolute; left: 0; }
+.card.in-sel { box-shadow: 0 0 0 2px var(--gold); }

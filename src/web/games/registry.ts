@@ -4,6 +4,8 @@ import { Rules as FishRules } from './finns-i-sjon/Rules';
 import { Table as FishTable } from './finns-i-sjon/Table';
 import { Rules as LudoRules } from './ludo/Rules';
 import { Table as LudoTable } from './ludo/Table';
+import { Rules as SolRules } from './solitaire/Rules';
+import { Table as SolTable } from './solitaire/Table';
 import { Rules as VTRules } from './vand-tian/Rules';
 import { Table as VTTable } from './vand-tian/Table';
 
@@ -27,6 +29,7 @@ export const webGames: WebGame[] = [
   { id: 'vand-tian', name: 'Vänd tian', players: '2–5 spelare', icon: '🃏', Table: VTTable, Rules: VTRules },
   { id: 'ludo', name: 'Ludo', players: '2–4 spelare', icon: '🎲', Table: LudoTable, Rules: LudoRules },
   { id: 'finns-i-sjon', name: 'Finns i sjön', players: '2–5 spelare', icon: '🐟', Table: FishTable, Rules: FishRules },
+  { id: 'solitaire', name: 'Solitaire', players: '1 spelare', icon: '♠', Table: SolTable, Rules: SolRules },
 ];
 
 export const comingSoon: { name: string; icon: string }[] = [
